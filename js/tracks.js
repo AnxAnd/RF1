@@ -1,4 +1,4 @@
-// RF1 — Official Formula 1 Track Data & Vector Outlines
+// RF1 — Official Formula 1 Track Directory & Vector Circuit Outlines
 (function(root) {
   'use strict';
 
@@ -9,7 +9,7 @@
       gp: 'SINGAPORE GP',
       flag: '🇸🇬',
       country: 'SGP',
-      year: '2026',
+      season: '2026',
       laps: 62,
       length: '4.940 km',
       topSpeed: 310,
@@ -23,7 +23,7 @@
       gp: 'BRITISH GP',
       flag: '🇬🇧',
       country: 'GBR',
-      year: '2024',
+      season: '2024',
       laps: 52,
       length: '5.891 km',
       topSpeed: 338,
@@ -37,7 +37,7 @@
       gp: 'MONACO GP',
       flag: '🇲🇨',
       country: 'MON',
-      year: '2024',
+      season: 'Classic',
       laps: 78,
       length: '3.337 km',
       topSpeed: 290,
@@ -51,7 +51,7 @@
       gp: 'BELGIAN GP',
       flag: '🇧🇪',
       country: 'BEL',
-      year: '2024',
+      season: 'Classic',
       laps: 44,
       length: '7.004 km',
       topSpeed: 345,
@@ -65,7 +65,7 @@
       gp: 'ITALIAN GP',
       flag: '🇮🇹',
       country: 'ITA',
-      year: '2024',
+      season: 'Classic',
       laps: 53,
       length: '5.793 km',
       topSpeed: 356,
@@ -79,7 +79,7 @@
       gp: 'AUSTRIAN GP',
       flag: '🇦🇹',
       country: 'AUT',
-      year: '2024',
+      season: '2024',
       laps: 71,
       length: '4.318 km',
       topSpeed: 328,
@@ -88,12 +88,40 @@
       svgPath: 'M 25,80 C 20,60 22,38 28,24 C 36,16 54,16 72,20 C 82,24 84,44 76,64 C 68,78 48,84 25,80 Z'
     },
     {
+      id: 'suzuka',
+      name: 'Suzuka Racing Course',
+      gp: 'JAPANESE GP',
+      flag: '🇯🇵',
+      country: 'JPN',
+      season: 'Classic',
+      laps: 53,
+      length: '5.807 km',
+      topSpeed: 330,
+      lapTimeSec: 89,
+      // Figure-8 layout: S Curves, Dunlop, Degner, Hairpin, Spoon, 130R, Casio Triangle
+      svgPath: 'M 22,78 C 18,65 24,52 35,46 C 44,42 55,42 64,36 C 75,30 82,18 72,14 C 62,10 52,18 48,28 C 42,40 50,56 60,64 C 70,72 82,78 74,84 C 64,88 34,88 22,78 Z'
+    },
+    {
+      id: 'interlagos',
+      name: 'Autódromo de Interlagos',
+      gp: 'SÃO PAULO GP',
+      flag: '🇧🇷',
+      country: 'BRA',
+      season: 'Classic',
+      laps: 71,
+      length: '4.309 km',
+      topSpeed: 335,
+      lapTimeSec: 70,
+      // Senna S, Curva do Sol, Reta Oposta, Descida do Lago, Ferradura, Bico de Pato, Mergulho, Junção
+      svgPath: 'M 28,82 C 16,74 14,55 18,36 C 24,20 42,16 64,18 C 82,20 88,34 82,50 C 76,64 68,72 54,76 C 42,80 34,84 28,82 Z'
+    },
+    {
       id: 'abudhabi',
       name: 'Yas Marina Circuit',
       gp: 'ABU DHABI GP',
       flag: '🇦🇪',
       country: 'UAE',
-      year: '2024',
+      season: '2024',
       laps: 58,
       length: '5.281 km',
       topSpeed: 332,
@@ -108,12 +136,17 @@
       return TRACKS;
     },
 
+    getTracksBySeason(seasonFilter) {
+      if (!seasonFilter || seasonFilter === 'ALL') return TRACKS;
+      return TRACKS.filter(t => t.season === seasonFilter);
+    },
+
     getTrackById(id) {
       return TRACKS.find(t => t.id === id) || TRACKS[0];
     },
 
     getDefaultTrack() {
-      return TRACKS[0]; // Silverstone
+      return TRACKS[0]; // Singapore
     }
   };
 

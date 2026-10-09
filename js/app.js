@@ -11,7 +11,8 @@
   let currentTeamIndex = 0;
   let activeView = 'races'; // Start with 'races' selection screen
   let activeMode = 'REPLAY'; // 'REPLAY' or 'LIVE'
-  let currentTrackId = 'silverstone';
+  let currentTrackId = 'singapore';
+  let currentSeasonFilter = 'ALL';
   let pollTimer = null;
   let isFetching = false;
 
@@ -98,6 +99,11 @@
   const pastRacesListEl = document.getElementById('past-races-list');
   const btnBrowsePast = document.getElementById('btn-browse-past-races');
   const btnRetryLive = document.getElementById('btn-retry-live');
+  const btnOpenF1Key = document.getElementById('btn-openf1-key');
+  const btnEnterKey = document.getElementById('btn-enter-key');
+  const liveKeyIndicator = document.getElementById('live-key-indicator');
+  const liveCardSub = document.getElementById('live-card-sub');
+  const seasonPills = document.querySelectorAll('.season-pill');
 
   // Notifications
   const toastEl = document.getElementById('toast');
@@ -126,19 +132,24 @@
   }
 
   // Populate Past Races List in Race Selector
-  function renderPastRacesList() {
+  function renderPastRacesList(filter = currentSeasonFilter) {
     if (!window.TrackManager) return;
-    const tracks = window.TrackManager.getAllTracks();
+    const tracks = window.TrackManager.getTracksBySeason(filter);
     pastRacesListEl.innerHTML = '';
+
+    if (!tracks || tracks.length === 0) {
+      pastRacesListEl.innerHTML = '<div style="font-size: 8px; color: #666; text-align: center; padding: 12px 0;">NO RACES FOUND</div>';
+      return;
+    }
 
     tracks.forEach(track => {
       const card = document.createElement('div');
-      card.className = `race-card ${track.id === currentTrackId ? 'active' : ''}`;
+      card.className = `race-card ${track.id === currentTrackId && activeMode === 'REPLAY' ? 'active' : ''}`;
       card.dataset.trackId = track.id;
       card.innerHTML = `
         <div class="race-card-info">
           <div class="race-card-title">${track.flag} ${track.name}</div>
-          <div class="race-card-sub">${track.gp} • ${track.laps} LAPS • ${track.length}</div>
+          <div class="race-card-sub">${track.gp} • ${track.season} • ${track.laps} LAPS</div>
         </div>
         <svg viewBox="0 0 100 100" class="race-card-mini-svg">
           <path d="${track.svgPath}" fill="none" stroke="#FE5000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
@@ -151,6 +162,45 @@
 
       pastRacesListEl.appendChild(card);
     });
+  }
+
+  function updateKeyIndicators() {
+    const key = (window.OpenF1 && window.OpenF1.apiKey) || localStorage.getItem('openf1_key') || '';
+    if (liveKeyIndicator) {
+      if (key && key.trim()) {
+        liveKeyIndicator.textContent = 'KEY OK';
+        liveKeyIndicator.classList.add('has-key');
+      } else {
+        liveKeyIndicator.textContent = 'AUTH';
+        liveKeyIndicator.classList.remove('has-key');
+      }
+    }
+    if (liveCardSub) {
+      if (key && key.trim()) {
+        liveCardSub.textContent = '2026 Season • Authenticated Feed';
+      } else {
+        liveCardSub.textContent = '2026 Season • Track Telemetry';
+      }
+    }
+  }
+
+  function promptForApiKey() {
+    const existing = (window.OpenF1 && window.OpenF1.apiKey) || localStorage.getItem('openf1_key') || '';
+    const key = prompt('Enter OpenF1 API Key for live track streaming (empty to clear):', existing);
+    if (key !== null) {
+      const cleanKey = key.trim();
+      if (window.OpenF1) {
+        window.OpenF1.setApiKey(cleanKey);
+      } else {
+        if (cleanKey) {
+          localStorage.setItem('openf1_key', cleanKey);
+        } else {
+          localStorage.removeItem('openf1_key');
+        }
+      }
+      updateKeyIndicators();
+      showToast(cleanKey ? 'API KEY SAVED' : 'API KEY CLEARED');
+    }
   }
 
   // Select a Circuit
@@ -174,6 +224,8 @@
       showToast(`${track.flag} ${track.gp}`);
     }
 
+    renderPastRacesList(currentSeasonFilter);
+
     // Switch to Cockpit HUD
     switchView('hud');
   }
@@ -195,6 +247,9 @@
         }
       }
     } catch (err) {
+      console.warn('[RF1] Live session check error:', err);
+    }
+
     // Check if OpenF1 returned a detailed explanation (e.g. key required during live track session)
     if (window.OpenF1 && window.OpenF1.lastStatus && window.OpenF1.lastStatus.detail) {
       const descEl = document.getElementById('no-live-desc-text');
@@ -214,8 +269,9 @@
       }
       connErrorEl.classList.add('hidden');
       updateHUDDriverHeader();
-      renderPastRacesList();
-      selectTrack('silverstone'); // Initial track setup
+      updateKeyIndicators();
+      renderPastRacesList(currentSeasonFilter);
+      selectTrack('singapore'); // Initial track setup
       // Keep launch view as 'races' selector
       switchView('races');
     } catch (err) {
@@ -538,18 +594,32 @@
       selectLiveRace();
     });
 
-    // 5. No Live Data Action Buttons
+    // 5. Season Filter Pills
+    seasonPills.forEach(pill => {
+      pill.addEventListener('click', (e) => {
+        e.stopPropagation();
+        seasonPills.forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        currentSeasonFilter = pill.dataset.season || 'ALL';
+        renderPastRacesList(currentSeasonFilter);
+      });
+    });
+
+    // 6. OpenF1 API Key Header Button
+    if (btnOpenF1Key) {
+      btnOpenF1Key.addEventListener('click', (e) => {
+        e.stopPropagation();
+        promptForApiKey();
+      });
+    }
+
+    // 7. No Live Data Action Buttons
     btnBrowsePast.addEventListener('click', () => switchView('races'));
     btnRetryLive.addEventListener('click', () => selectLiveRace());
-    const btnEnterKey = document.getElementById('btn-enter-key');
     if (btnEnterKey) {
       btnEnterKey.addEventListener('click', () => {
-        const key = prompt('Enter OpenF1 API Key for live unblocked streaming:');
-        if (key && key.trim()) {
-          if (window.OpenF1) window.OpenF1.setApiKey(key.trim());
-          showToast('API KEY SAVED');
-          selectLiveRace();
-        }
+        promptForApiKey();
+        selectLiveRace();
       });
     }
 

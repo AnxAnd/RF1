@@ -33,9 +33,13 @@
     }
 
     setApiKey(key) {
-      this.apiKey = key;
+      this.apiKey = key || null;
       if (typeof localStorage !== 'undefined') {
-        localStorage.setItem('openf1_key', key);
+        if (key) {
+          localStorage.setItem('openf1_key', key);
+        } else {
+          localStorage.removeItem('openf1_key');
+        }
       }
     }
 

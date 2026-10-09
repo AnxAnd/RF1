@@ -14,13 +14,21 @@
     <main id="app" class="r1-viewport" tabindex="0">
       
       <!-- ==============================================
-           VIEW 0: RACE SELECTOR (LAUNCH SCREEN)
+           VIEW 0: RACE & SEASON SELECTOR (LAUNCH SCREEN)
            ============================================== -->
       <section id="view-races" class="view active">
         <header class="races-header">
-          <span class="races-header-title">SELECT RACE</span>
-          <span class="races-header-sub">2024 SEASON</span>
+          <span class="races-header-title">RACE SESSIONS</span>
+          <button id="btn-openf1-key" class="header-key-btn" title="OpenF1 API Key Settings">🔑 KEY</button>
         </header>
+
+        <!-- Season / Category Filter Pills -->
+        <div class="season-filter-bar">
+          <button class="season-pill active" data-season="ALL">ALL</button>
+          <button class="season-pill" data-season="2026">2026</button>
+          <button class="season-pill" data-season="2024">2024</button>
+          <button class="season-pill" data-season="Classic">CLASSIC</button>
+        </div>
 
         <div class="races-list-container">
           <!-- 1. LIVE RACE OPTION -->
@@ -28,13 +36,14 @@
             <div class="race-live-dot"></div>
             <div class="race-card-info">
               <div class="race-card-title">🔴 LIVE GRAND PRIX</div>
-              <div class="race-card-sub">Active track telemetry</div>
+              <div class="race-card-sub" id="live-card-sub">2026 Season • Track Telemetry</div>
             </div>
+            <span id="live-key-indicator" class="live-key-tag">AUTH</span>
           </div>
 
-          <div class="races-section-divider">PAST REPLAYS</div>
+          <div class="races-section-divider">REPLAY CATALOGUE</div>
 
-          <!-- 2. PAST CLASSIC RACES (Dynamically rendered or templated) -->
+          <!-- 2. PAST & CLASSIC RACES (Populated dynamically) -->
           <div id="past-races-list"></div>
         </div>
       </section>
@@ -54,8 +63,8 @@
             <span id="driver-pos" class="pos-badge">P1</span>
             <span id="driver-gap" class="gap-text">LEADER</span>
             <button id="btn-race-hud" class="race-track-badge" title="Tap to change race">
-              <span id="hud-track-flag">🇬🇧</span>
-              <span id="hud-track-name">SILVERSTONE</span>
+              <span id="hud-track-flag">🇸🇬</span>
+              <span id="hud-track-name">SINGAPORE</span>
             </button>
           </div>
         </header>
@@ -90,7 +99,7 @@
             <div id="gear-val" class="gear-val">7</div>
           </div>
           <div class="speed-cluster">
-            <div id="speed-val" class="speed-val">314</div>
+            <div id="speed-val" class="speed-val">310</div>
             <span class="speed-unit">KM/H</span>
           </div>
           <div id="drs-pill" class="drs-pill">DRS</div>
@@ -121,7 +130,7 @@
               <span id="tire-age" class="tire-age-text">22 LAPS</span>
             </div>
             <div class="lap-row">
-              <span id="lap-counter" class="lap-text">L 42 / 52</span>
+              <span id="lap-counter" class="lap-text">L 42 / 62</span>
             </div>
           </div>
         </footer>
@@ -139,7 +148,7 @@
           <div class="split-meta">
             <span id="split-delta-badge" class="split-delta-badge">Δ +4.47s</span>
             <button id="btn-race-split" class="race-track-badge">
-              <span id="split-track-name">SILVERSTONE</span>
+              <span id="split-track-name">SINGAPORE</span>
             </button>
           </div>
         </header>
@@ -158,7 +167,7 @@
             </div>
             <div class="split-metric-row">
               <span class="split-metric-label">SPD</span>
-              <span id="s1-speed" class="split-speed-val">314</span>
+              <span id="s1-speed" class="split-speed-val">310</span>
             </div>
             <div id="s1-drs" class="split-drs-badge">DRS</div>
             <div class="split-pedals-row">
@@ -186,7 +195,7 @@
             </div>
             <div class="split-metric-row">
               <span class="split-metric-label">SPD</span>
-              <span id="s2-speed" class="split-speed-val">310</span>
+              <span id="s2-speed" class="split-speed-val">306</span>
             </div>
             <div id="s2-drs" class="split-drs-badge">DRS</div>
             <div class="split-pedals-row">
@@ -208,10 +217,10 @@
         <header class="tower-header">
           <div class="tower-title-group">
             <span class="tower-title">STANDINGS</span>
-            <span id="tower-session" class="tower-lap">L 42/52</span>
+            <span id="tower-session" class="tower-lap">L 42/62</span>
           </div>
           <button id="btn-race-tower" class="race-track-badge">
-            <span id="tower-track-name">SILVERSTONE</span>
+            <span id="tower-track-name">SINGAPORE</span>
           </button>
         </header>
         <div class="tower-list-container">
@@ -222,7 +231,7 @@
       </section>
 
       <!-- ==============================================
-           VIEW 4: NO LIVE DATA STATE (When Live has no session)
+           VIEW 4: NO LIVE DATA STATE
            ============================================== -->
       <section id="view-no-live" class="view">
         <div class="no-live-container">
@@ -230,12 +239,12 @@
             <div class="no-live-ping"></div>
             <span class="no-live-icon">📡</span>
           </div>
-          <h2 class="no-live-title">NO LIVE RACE DATA</h2>
-          <p id="no-live-desc-text" class="no-live-desc">No active session is currently running on track for the 2026 season, or authentication is required during live track hours.</p>
+          <h2 class="no-live-title">LIVE RACE STATUS</h2>
+          <p id="no-live-desc-text" class="no-live-desc">No live session is currently broadcast, or an OpenF1 API key is required during live track sessions.</p>
           <div class="no-live-actions">
-            <button id="btn-browse-past-races" class="btn-action-primary">SELECT PAST RACE</button>
-            <button id="btn-retry-live" class="btn-action-secondary">RETRY FEED</button>
-            <button id="btn-enter-key" class="btn-action-secondary">ADD OPENF1 KEY</button>
+            <button id="btn-enter-key" class="btn-action-primary">🔑 ENTER OPENF1 KEY</button>
+            <button id="btn-browse-past-races" class="btn-action-secondary">SELECT REPLAY RACE</button>
+            <button id="btn-retry-live" class="btn-action-secondary">RETRY LIVE FEED</button>
           </div>
         </div>
       </section>

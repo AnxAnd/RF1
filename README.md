@@ -25,12 +25,19 @@ Point your Rabbit R1 camera at the QR code below to launch **RF1**:
 
 ## ✨ Key Features & Architecture
 
-* **Race Selection on Launch (`RACES`)**:
-  * Choose between a **Live Grand Prix** (current season) or **Past Classic Races** (Silverstone, Monaco, Spa, Monza, Austria, Abu Dhabi).
-  * If a Live Race is selected while no track session is active, RF1 presents a dedicated **"NO LIVE RACE DATA"** status screen rather than showing placeholder or mock data.
+* **Race & Season Selection on Launch (`RACES`)**:
+  * Filter races by category: **`ALL`**, **`2026`**, **`2024`**, and **`CLASSIC`**.
+  * Choose between **Live Grand Prix** (current 2026 season) or the **Replay Catalogue** of 9 iconic circuits:
+    * **2026**: Singapore GP (Marina Bay Street Circuit)
+    * **2024**: British GP (Silverstone), Austrian GP (Red Bull Ring), Abu Dhabi GP (Yas Marina)
+    * **Classic**: Monaco GP (Circuit de Monaco), Belgian GP (Spa-Francorchamps), Italian GP (Monza), Japanese GP (Suzuka), São Paulo GP (Interlagos)
+  * If a Live Race is selected while no track session is active, RF1 presents an informative **"LIVE RACE STATUS"** screen with quick options to enter an API key or pick a replay race.
+* **OpenF1 Live Session Authentication**:
+  * Tap **`🔑 KEY`** in the header or provide `?key=YOUR_KEY` in the URL to store your OpenF1 API key in `localStorage`.
+  * Allows live unblocked streaming during active F1 race sessions (which restrict unauthenticated global requests).
 * **Dynamic Track Vector Watermark**:
   * Behind the Cockpit HUD gauges sits a subtle, glowing vector outline of the selected circuit layout.
-  * Displays the flag and circuit title in the header (e.g. `🇬🇧 SILVERSTONE • BRITISH GP`, `🇲🇨 MONACO • MONACO GP`).
+  * Displays the flag and circuit title in the header (e.g. `🇸🇬 SINGAPORE • SINGAPORE GP`, `🇬🇧 SILVERSTONE • BRITISH GP`, `🇲🇨 MONACO • MONACO GP`).
   * Tap the circuit badge in the header anytime to open the Race Selector and change tracks.
 * **Rabbit R1 Native Hardware Bridge**:
   * **Notched Scroll Wheel (`scrollUp` / `scrollDown`)**: Native rabbitOS event listener to cycle drivers in HUD/Standings, cycle teams in Split view, or scroll the race cards in the Race Selector.

@@ -102,6 +102,79 @@ body {
   color: #777777;
 }
 
+.header-key-btn {
+  background: #1c1c20;
+  border: 1px solid #333338;
+  color: #FE5000;
+  font-size: 8px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 3px;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: all 0.1s ease;
+}
+
+.header-key-btn:active {
+  background: #FE5000;
+  color: #000000;
+}
+
+.season-filter-bar {
+  display: flex;
+  gap: 4px;
+  padding: 4px 6px;
+  background: #08080a;
+  border-bottom: 1px solid #16161a;
+  overflow-x: auto;
+}
+
+.season-filter-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.season-pill {
+  flex: 1;
+  background: #121216;
+  border: 1px solid #24242a;
+  color: #888888;
+  font-size: 8px;
+  font-weight: 800;
+  padding: 3px 0;
+  text-align: center;
+  border-radius: 3px;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: all 0.1s ease;
+}
+
+.season-pill:active {
+  background: #202026;
+  color: #ffffff;
+}
+
+.season-pill.active {
+  background: rgba(254, 80, 0, 0.16);
+  border-color: #FE5000;
+  color: #FE5000;
+}
+
+.live-key-tag {
+  font-size: 7px;
+  font-weight: 900;
+  padding: 1px 4px;
+  border-radius: 2px;
+  background: #24242a;
+  color: #888888;
+  letter-spacing: 0.5px;
+}
+
+.live-key-tag.has-key {
+  background: #00E676;
+  color: #000000;
+  box-shadow: 0 0 6px rgba(0, 230, 118, 0.5);
+}
+
 .races-list-container {
   flex: 1;
   overflow-y: auto;
