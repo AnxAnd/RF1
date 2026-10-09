@@ -67,15 +67,20 @@
             <span id="team-stripe" class="team-stripe"></span>
             <span id="driver-code" class="code">NOR</span>
             <span id="driver-num" class="num">1</span>
-            <span id="driver-last-name" class="driver-name-text">NORRIS</span>
           </div>
           <div class="hud-metrics">
             <span id="driver-pos" class="pos-badge">P1</span>
             <span id="driver-gap" class="gap-text">LEADER</span>
             <span id="hud-flag-badge" class="hud-flag-badge hidden">🏁</span>
-            <button id="btn-race-hud" class="race-track-badge" title="Tap to change race">
-              <span id="hud-track-flag">🇸🇬</span>
-              <span id="hud-track-name">SINGAPORE</span>
+            <button id="btn-race-hud" class="race-track-badge hud-session-ticker-badge" title="Tap to change race">
+              <div class="hud-ticker-viewport">
+                <div id="hud-ticker-track" class="hud-ticker-track">
+                  <span class="hud-ticker-text" id="hud-ticker-text-1">🇸🇬 SINGAPORE • GRAND PRIX</span>
+                  <span class="hud-ticker-spacer">&nbsp;&nbsp;•&nbsp;&nbsp;</span>
+                  <span class="hud-ticker-text" id="hud-ticker-text-2">🇸🇬 SINGAPORE • GRAND PRIX</span>
+                  <span class="hud-ticker-spacer">&nbsp;&nbsp;•&nbsp;&nbsp;</span>
+                </div>
+              </div>
             </button>
           </div>
         </header>

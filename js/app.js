@@ -50,6 +50,8 @@
   const hudFlagBadge = document.getElementById('hud-flag-badge');
   const hudTrackFlag = document.getElementById('hud-track-flag');
   const hudTrackName = document.getElementById('hud-track-name');
+  const hudTickerText1 = document.getElementById('hud-ticker-text-1');
+  const hudTickerText2 = document.getElementById('hud-ticker-text-2');
   const trackWatermarkSvg = document.getElementById('track-watermark-svg');
   const trackWatermarkPath = document.getElementById('track-watermark-path');
 
@@ -295,9 +297,9 @@
             }
             trackWatermarkPath.setAttribute('d', track.svgPath);
           }
-          hudTrackFlag.textContent = '🇸🇬';
+          if (hudTrackFlag) hudTrackFlag.textContent = '🇸🇬';
           const gpName = (rawData.Session?.Meeting?.Name || 'SINGAPORE GP').toUpperCase();
-          hudTrackName.textContent = 'SINGAPORE GP';
+          if (hudTrackName) hudTrackName.textContent = 'SINGAPORE GP';
           splitTrackName.textContent = gpName;
           if (towerTrackName) towerTrackName.textContent = gpName;
 
@@ -354,8 +356,8 @@
       }
       trackWatermarkPath.setAttribute('d', track.svgPath);
       // Update header badges
-      hudTrackFlag.textContent = track.flag;
-      hudTrackName.textContent = (track.shortName || track.gp || track.name).replace(' GP', '').replace(' GRAND PRIX', '').toUpperCase();
+      if (hudTrackFlag) hudTrackFlag.textContent = track.flag;
+      if (hudTrackName) hudTrackName.textContent = (track.shortName || track.gp || track.name).replace(' GP', '').replace(' GRAND PRIX', '').toUpperCase();
       splitTrackName.textContent = track.gp;
       if (towerTrackName) towerTrackName.textContent = track.gp;
 
@@ -415,8 +417,8 @@
               }
             }
 
-            hudTrackFlag.textContent = trackFlag;
-            hudTrackName.textContent = trackName.replace(' GRAND PRIX', '').replace(' GP', '');
+            if (hudTrackFlag) hudTrackFlag.textContent = trackFlag;
+            if (hudTrackName) hudTrackName.textContent = trackName.replace(' GRAND PRIX', '').replace(' GP', '');
             splitTrackName.textContent = trackName;
             if (towerTrackName) towerTrackName.textContent = trackName;
 
@@ -469,8 +471,8 @@
         // If an active session is in progress
         if (session && session.session_type === 'Race') {
           activeMode = 'LIVE';
-          hudTrackFlag.textContent = '🔴';
-          hudTrackName.textContent = (session.circuit_short_name || 'LIVE RACE').toUpperCase();
+          if (hudTrackFlag) hudTrackFlag.textContent = '🔴';
+          if (hudTrackName) hudTrackName.textContent = (session.circuit_short_name || 'LIVE RACE').toUpperCase();
           showToast('🔴 CONNECTED TO LIVE RACE');
           switchView('hud');
           return;
@@ -513,7 +515,7 @@
     return drivers[currentDriverIndex];
   }
 
-  function updateTowerTicker(text) {
+  function updateSessionTicker(text) {
     if (!text) return;
     if (towerTickerText1 && towerTickerText1.textContent !== text) {
       towerTickerText1.textContent = text;
@@ -521,6 +523,16 @@
     if (towerTickerText2 && towerTickerText2.textContent !== text) {
       towerTickerText2.textContent = text;
     }
+    if (hudTickerText1 && hudTickerText1.textContent !== text) {
+      hudTickerText1.textContent = text;
+    }
+    if (hudTickerText2 && hudTickerText2.textContent !== text) {
+      hudTickerText2.textContent = text;
+    }
+  }
+
+  function updateTowerTicker(text) {
+    updateSessionTicker(text);
   }
 
   function updateHUDDriverHeader() {
@@ -896,11 +908,22 @@
             data.sessionType = sDetails.sessionType;
             data.sessionPart = sDetails.part;
             data.sessionName = sDetails.sessionName;
+            updateSessionTicker(sDetails.tickerText);
           }
           data.driverLaps = liveD.laps || liveD.tireAge || 1;
         }
       } else if (activeMode === 'REPLAY' && window.F1Simulator) {
         data = window.F1Simulator.getDriverTelemetry(current.number);
+        const track = window.TrackManager ? window.TrackManager.getTrackById(currentTrackId) : null;
+        const flag = track ? track.flag : '🏁';
+        const trackNameUpper = (track ? (track.shortName || track.name) : 'SINGAPORE').toUpperCase();
+        let part = data.sessionPart || (data.isRace ? 'GRAND PRIX' : 'QUALI');
+        if (part === 'RACE') part = 'GRAND PRIX';
+        else if (part === 'SQ3' || part === 'SQ2' || part === 'SQ1') part = `${part} SPRINT QUALI`;
+        else if (part === 'Q3' || part === 'Q2' || part === 'Q1') part = `${part} QUALIFYING`;
+        else if (part === 'FP1' || part === 'FP2' || part === 'FP3') part = `${part} PRACTICE`;
+        const tickerStr = `${flag} ${trackNameUpper} • ${part} • 🏁 REPLAY`;
+        updateSessionTicker(tickerStr);
       } else if (activeMode === 'LIVE' && window.OpenF1) {
         data = await window.OpenF1.getTelemetry(current.number);
       } else {

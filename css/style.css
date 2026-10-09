@@ -316,26 +316,18 @@ body {
 }
 
 .driver-tag .num {
-  font-size: 11px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 700;
   color: #888888;
-}
-
-.driver-name-text {
-  font-size: 10px;
-  font-weight: 800;
-  color: #FFFFFF;
-  letter-spacing: 0.3px;
-  max-width: 62px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .hud-metrics {
   display: flex;
   align-items: center;
   gap: 4px;
+  min-width: 0;
+  flex: 1;
+  justify-content: flex-end;
 }
 
 .hud-flag-badge {
@@ -945,9 +937,10 @@ body {
   color: #888888;
 }
 
-.tower-session-ticker-badge {
-  max-width: 115px;
-  min-width: 80px;
+.tower-session-ticker-badge,
+.hud-session-ticker-badge {
+  max-width: 105px;
+  min-width: 70px;
   height: 20px;
   overflow: hidden;
   padding: 0 4px;
@@ -958,22 +951,28 @@ body {
   border-radius: 3px;
   cursor: pointer;
   position: relative;
+  flex-shrink: 1;
 }
 
-.tower-session-ticker-badge:active {
+.tower-session-ticker-badge:active,
+.hud-session-ticker-badge:active {
   background: #FE5000;
   border-color: #FE5000;
 }
 
-.tower-ticker-viewport {
+.tower-ticker-viewport,
+.hud-ticker-viewport {
   width: 100%;
   overflow: hidden;
   white-space: nowrap;
   display: flex;
   align-items: center;
+  mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
 }
 
-.tower-ticker-track {
+.tower-ticker-track,
+.hud-ticker-track {
   display: inline-flex;
   white-space: nowrap;
   animation: tower-marquee 12s linear infinite;
@@ -981,7 +980,9 @@ body {
 }
 
 .tower-session-ticker-badge:hover .tower-ticker-track,
-.tower-session-ticker-badge:active .tower-ticker-track {
+.tower-session-ticker-badge:active .tower-ticker-track,
+.hud-session-ticker-badge:hover .hud-ticker-track,
+.hud-session-ticker-badge:active .hud-ticker-track {
   animation-play-state: paused;
 }
 
@@ -994,7 +995,8 @@ body {
   }
 }
 
-.tower-ticker-text {
+.tower-ticker-text,
+.hud-ticker-text {
   font-size: 8px;
   font-weight: 800;
   color: #DDDDDD;
@@ -1002,11 +1004,13 @@ body {
   white-space: nowrap;
 }
 
-.tower-session-ticker-badge:active .tower-ticker-text {
+.tower-session-ticker-badge:active .tower-ticker-text,
+.hud-session-ticker-badge:active .hud-ticker-text {
   color: #FFFFFF;
 }
 
-.tower-ticker-spacer {
+.tower-ticker-spacer,
+.hud-ticker-spacer {
   font-size: 7px;
   color: #FE5000;
   padding: 0 3px;
