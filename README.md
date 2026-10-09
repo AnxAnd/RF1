@@ -2,7 +2,7 @@
 
 ![RF1 — Formula 1 Telemetry Companion](banner.png)
 
-# 🏎️ RF1
+# 
 ### Dedicated Formula 1 Pit-Wall Telemetry Companion for Rabbit R1
 
 [![rabbitOS Creations](https://img.shields.io/badge/rabbitOS-Creations%20SDK-FE5000?style=for-the-badge&logo=rabbit&logoColor=white)](https://github.com/rabbit-hmi-oss/creations-sdk)
