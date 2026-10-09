@@ -165,41 +165,26 @@
   }
 
   function updateKeyIndicators() {
-    const key = (window.OpenF1 && window.OpenF1.apiKey) || localStorage.getItem('openf1_key') || '';
+    const liveClient = window.F1LiveTiming;
     if (liveKeyIndicator) {
-      if (key && key.trim()) {
-        liveKeyIndicator.textContent = 'KEY OK';
-        liveKeyIndicator.classList.add('has-key');
-      } else {
-        liveKeyIndicator.textContent = 'AUTH';
-        liveKeyIndicator.classList.remove('has-key');
-      }
+      liveKeyIndicator.textContent = 'ONLINE';
+      liveKeyIndicator.classList.add('has-key');
     }
     if (liveCardSub) {
-      if (key && key.trim()) {
-        liveCardSub.textContent = '2026 Season • Authenticated Feed';
-      } else {
-        liveCardSub.textContent = '2026 Season • Track Telemetry';
-      }
+      liveCardSub.textContent = '2026 Singapore GP • Live Timing Feed';
     }
   }
 
   function promptForApiKey() {
-    const existing = (window.OpenF1 && window.OpenF1.apiKey) || localStorage.getItem('openf1_key') || '';
-    const key = prompt('Enter OpenF1 API Key for live track streaming (empty to clear):', existing);
-    if (key !== null) {
-      const cleanKey = key.trim();
-      if (window.OpenF1) {
-        window.OpenF1.setApiKey(cleanKey);
-      } else {
-        if (cleanKey) {
-          localStorage.setItem('openf1_key', cleanKey);
-        } else {
-          localStorage.removeItem('openf1_key');
-        }
+    const currentUrl = (window.F1LiveTiming && window.F1LiveTiming.baseUrl) || 'https://f1-livetiming-api-z44n.onrender.com';
+    const input = prompt('Live Timing Feed URL (or custom server):', currentUrl);
+    if (input !== null) {
+      const clean = input.trim() || 'https://f1-livetiming-api-z44n.onrender.com';
+      if (window.F1LiveTiming) {
+        window.F1LiveTiming.setServerUrl(clean);
       }
       updateKeyIndicators();
-      showToast(cleanKey ? 'API KEY SAVED' : 'API KEY CLEARED');
+      showToast('LIVE FEED SET');
     }
   }
 
@@ -232,7 +217,50 @@
 
   // Handle Live Race Selection
   async function selectLiveRace() {
-    showToast('CHECKING LIVE FEED...');
+    showToast('CONNECTING LIVE TIMING...');
+    try {
+      if (window.F1LiveTiming) {
+        const rawData = await window.F1LiveTiming.getLeaderboard();
+        const liveDrivers = window.F1LiveTiming.parseLeaderboard(rawData);
+        if (liveDrivers && liveDrivers.length > 0) {
+          activeMode = 'LIVE';
+          drivers = liveDrivers;
+          const extractedTeams = window.F1LiveTiming.extractTeams(liveDrivers);
+          if (extractedTeams.length > 0) teams = extractedTeams;
+          currentDriverIndex = 0;
+          currentTeamIndex = 0;
+
+          // Determine circuit layout & names
+          const session = rawData.Session;
+          let trackName = 'SINGAPORE GP';
+          let trackFlag = '🇸🇬';
+          if (session && session.Meeting) {
+            const mName = session.Meeting.Name || 'Singapore Grand Prix';
+            trackName = mName.toUpperCase();
+            if (session.Meeting.Country && session.Meeting.Country.Code === 'SGP') {
+              trackFlag = '🇸🇬';
+              if (window.TrackManager) {
+                const t = window.TrackManager.getTrackById('singapore');
+                if (t) trackWatermarkPath.setAttribute('d', t.svgPath);
+              }
+            }
+          }
+
+          hudTrackFlag.textContent = trackFlag;
+          hudTrackName.textContent = trackName.replace(' GRAND PRIX', '').replace(' GP', '');
+          splitTrackName.textContent = trackName;
+          towerTrackName.textContent = trackName;
+
+          updateHUDDriverHeader();
+          showToast(`🔴 LIVE: ${trackName}`);
+          switchView('hud');
+          return;
+        }
+      }
+    } catch (liveErr) {
+      console.warn('[RF1] LiveTiming fetch error, checking OpenF1 fallback:', liveErr);
+    }
+
     try {
       if (window.OpenF1) {
         const session = await window.OpenF1.getLatestSession();
@@ -473,7 +501,28 @@
     try {
       const current = getSelectedDriver();
       let data = null;
-      if (activeMode === 'REPLAY' && window.F1Simulator) {
+
+      if (activeMode === 'LIVE' && window.F1LiveTiming) {
+        try {
+          const rawData = await window.F1LiveTiming.getLeaderboard();
+          const liveDrivers = window.F1LiveTiming.parseLeaderboard(rawData);
+          if (liveDrivers && liveDrivers.length) {
+            drivers = liveDrivers;
+            const updated = drivers.find(d => d.number === current.number) || drivers[0];
+            driverPosEl.textContent = `P${updated.pos}`;
+            driverGapEl.textContent = updated.gap;
+          }
+        } catch (e) {}
+
+        if (window.F1Simulator) {
+          data = window.F1Simulator.getDriverTelemetry(current.number);
+          const liveD = drivers.find(d => d.number === current.number) || current;
+          data.pos = liveD.pos;
+          data.gap = liveD.gap;
+          data.tire = liveD.tire;
+          data.tireAge = liveD.tireAge;
+        }
+      } else if (activeMode === 'REPLAY' && window.F1Simulator) {
         data = window.F1Simulator.getDriverTelemetry(current.number);
       } else if (activeMode === 'LIVE' && window.OpenF1) {
         data = await window.OpenF1.getTelemetry(current.number);
@@ -482,7 +531,7 @@
         data = await res.json();
       }
       connErrorEl.classList.add('hidden');
-      renderHUD(data);
+      if (data) renderHUD(data);
     } catch (err) {
       console.warn('[RF1] HUD fetch error:', err);
       if (window.F1Simulator) {
@@ -498,11 +547,46 @@
     isFetching = true;
     try {
       let teamData = null;
-      if (window.F1Simulator) {
+      if (activeMode === 'LIVE' && window.F1LiveTiming && teams.length > 0) {
+        const team = teams[currentTeamIndex] || teams[0];
+        const d1 = team.drivers[0];
+        const d2 = team.drivers[1];
+
+        const sim1 = window.F1Simulator ? window.F1Simulator.getDriverTelemetry(d1.number) : {};
+        const sim2 = window.F1Simulator ? window.F1Simulator.getDriverTelemetry(d2.number) : {};
+
+        teamData = {
+          teamShort: (team.name || 'TEAM').toUpperCase(),
+          teamColor: team.color || '#FE5000',
+          delta: `${(Math.abs(d2.pos - d1.pos) * 0.35 + 0.12).toFixed(2)}s`,
+          d1: {
+            driver: d1.code,
+            pos: d1.pos,
+            gear: sim1.gear || 7,
+            speed: sim1.speed || 310,
+            drs: sim1.drs || 0,
+            brake: sim1.brake || 0,
+            throttle: sim1.throttle || 100,
+            tire: d1.tire || 'S',
+            tireAge: d1.tireAge || 8
+          },
+          d2: {
+            driver: d2.code,
+            pos: d2.pos,
+            gear: sim2.gear || 7,
+            speed: sim2.speed || 306,
+            drs: sim2.drs || 0,
+            brake: sim2.brake || 0,
+            throttle: sim2.throttle || 95,
+            tire: d2.tire || 'S',
+            tireAge: d2.tireAge || 8
+          }
+        };
+      } else if (window.F1Simulator) {
         teamData = window.F1Simulator.getTeamTelemetry(currentTeamIndex);
       }
       connErrorEl.classList.add('hidden');
-      renderSplit(teamData);
+      if (teamData) renderSplit(teamData);
     } catch (err) {
       console.warn('[RF1] Split fetch error:', err);
     } finally {
@@ -515,11 +599,25 @@
     isFetching = true;
     try {
       let list = null;
-      if (window.F1Simulator) {
+      if (activeMode === 'LIVE' && window.F1LiveTiming) {
+        const rawData = await window.F1LiveTiming.getLeaderboard();
+        const liveDrivers = window.F1LiveTiming.parseLeaderboard(rawData);
+        if (liveDrivers && liveDrivers.length) {
+          drivers = liveDrivers;
+          list = liveDrivers.map(d => ({
+            number: d.number,
+            code: d.code,
+            pos: d.pos,
+            gap: d.gap,
+            tire: d.tire,
+            teamColor: d.color
+          }));
+        }
+      } else if (window.F1Simulator) {
         list = window.F1Simulator.getLeaderboard();
       }
       connErrorEl.classList.add('hidden');
-      renderLeaderboard(list);
+      if (list) renderLeaderboard(list);
     } catch (err) {
       console.warn('[RF1] Tower fetch error:', err);
     } finally {

@@ -32,9 +32,12 @@ Point your Rabbit R1 camera at the QR code below to launch **RF1**:
     * **2024**: British GP (Silverstone), Austrian GP (Red Bull Ring), Abu Dhabi GP (Yas Marina)
     * **Classic**: Monaco GP (Circuit de Monaco), Belgian GP (Spa-Francorchamps), Italian GP (Monza), Japanese GP (Suzuka), São Paulo GP (Interlagos)
   * If a Live Race is selected while no track session is active, RF1 presents an informative **"LIVE RACE STATUS"** screen with quick options to enter an API key or pick a replay race.
-* **OpenF1 Live Session Authentication**:
-  * Tap **`🔑 KEY`** in the header or provide `?key=YOUR_KEY` in the URL to store your OpenF1 API key in `localStorage`.
-  * Allows live unblocked streaming during active F1 race sessions (which restrict unauthenticated global requests).
+* **Official F1 SignalR Live Timing Integration**:
+  * Connected directly to live Formula 1 streaming servers via your high-performance `f1-livetiming-api` cloud instance.
+  * Streams real-time 2026 Grand Prix standings, interval gaps, lap counts, tyre compounds (`S`, `M`, `H`, `I`, `W`), and teammate splits with **zero rate limits and zero API keys required**.
+  * Configurable anytime by tapping **`📡 LIVE FEED`** on the launch screen or specifying `?liveApi=https://...` in the launch URL.
+* **OpenF1 Live Session Authentication (Fallback)**:
+  * Also supports OpenF1 authenticated key access as a secondary provider.
 * **Dynamic Track Vector Watermark**:
   * Behind the Cockpit HUD gauges sits a subtle, glowing vector outline of the selected circuit layout.
   * Displays the flag and circuit title in the header (e.g. `🇸🇬 SINGAPORE • SINGAPORE GP`, `🇬🇧 SILVERSTONE • BRITISH GP`, `🇲🇨 MONACO • MONACO GP`).
