@@ -13,6 +13,15 @@
     <!-- Viewport locked strictly to 240 x 282 CSS pixels -->
     <main id="app" class="r1-viewport" tabindex="0">
       
+      <!-- Flag Alert Banner (Pops up during Yellow, Red, SC, VSC, Chequered flags) -->
+      <div id="flag-alert-banner" class="flag-alert-banner hidden">
+        <div class="flag-content">
+          <span id="flag-badge-pill" class="flag-badge-pill">🟡 YELLOW</span>
+          <span id="flag-msg-text" class="flag-msg-text">CAUTION ON TRACK</span>
+        </div>
+        <button id="btn-close-flag" class="flag-close-btn" title="Dismiss Flag">✕</button>
+      </div>
+
       <!-- ==============================================
            VIEW 0: RACE & SEASON SELECTOR (LAUNCH SCREEN)
            ============================================== -->
@@ -145,8 +154,10 @@
       <section id="view-split" class="view">
         <header class="split-header">
           <div class="split-team-tag">
+            <button id="btn-split-prev-team" class="team-nav-arrow" title="Previous Manufacturer">◀</button>
             <span id="split-team-stripe" class="team-stripe"></span>
-            <span id="split-team-name" class="split-team-title">MCLAREN</span>
+            <span id="split-team-name" class="split-team-title" title="Tap to switch team">MCLAREN</span>
+            <button id="btn-split-next-team" class="team-nav-arrow" title="Next Manufacturer">▶</button>
           </div>
           <div class="split-meta">
             <span id="split-delta-badge" class="split-delta-badge">Δ +4.47s</span>

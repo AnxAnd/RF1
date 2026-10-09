@@ -362,6 +362,40 @@
         };
       });
     }
+
+    getFlagState() {
+      if (this.customFlag) return this.customFlag;
+      const elapsedSec = Math.floor((Date.now() - this.startTime) / 1000);
+      const cycle = elapsedSec % 160;
+      if (cycle >= 50 && cycle <= 65) {
+        return {
+          type: 'YELLOW',
+          title: 'YELLOW FLAG',
+          msg: 'SECTOR 2 CAUTION',
+          sectors: [2],
+          isCaution: true
+        };
+      }
+      return {
+        type: 'GREEN',
+        title: 'GREEN FLAG',
+        msg: 'TRACK CLEAR',
+        isCaution: false
+      };
+    }
+
+    setFlag(type, msg) {
+      if (!type || type === 'CLEAR' || type === 'GREEN') {
+        this.customFlag = { type: 'GREEN', title: 'GREEN FLAG', msg: 'TRACK CLEAR', isCaution: false };
+      } else {
+        this.customFlag = {
+          type: type.toUpperCase(),
+          title: type.toUpperCase().includes('RED') ? 'RED FLAG' : 'YELLOW FLAG',
+          msg: msg || 'CAUTION ON TRACK',
+          isCaution: true
+        };
+      }
+    }
   }
 
   const instance = new SimulatorEngine();

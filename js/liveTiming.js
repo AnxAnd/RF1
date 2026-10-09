@@ -155,13 +155,20 @@
         if (!teamMap.has(teamKey)) {
           teamMap.set(teamKey, {
             name: teamKey,
+            shortName: teamKey.toUpperCase(),
             color: d.color,
             drivers: []
           });
         }
         teamMap.get(teamKey).drivers.push(d);
       });
-      return Array.from(teamMap.values()).filter(t => t.drivers.length >= 2);
+      const result = Array.from(teamMap.values()).filter(t => t.drivers.length >= 2);
+      result.forEach((t, tIdx) => {
+        t.drivers.forEach(d => {
+          d.teamIndex = tIdx;
+        });
+      });
+      return result;
     }
 
     isSessionLive(sessionData) {
@@ -206,6 +213,121 @@
         name,
         meeting,
         desc
+      };
+    }
+
+    async getRaceControl() {
+      const now = Date.now();
+      if (this.cache.raceControl && (now - (this.cache.lastRaceControlFetch || 0) < 1200)) {
+        return this.cache.raceControl;
+      }
+      try {
+        const res = await fetch(`${this.baseUrl}/api/race-control`, { cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        this.cache.raceControl = data;
+        this.cache.lastRaceControlFetch = now;
+        return data;
+      } catch (err) {
+        return null;
+      }
+    }
+
+    parseFlagState(raceControlData) {
+      if (!raceControlData || !raceControlData.RaceControl || !Array.isArray(raceControlData.RaceControl)) {
+        return { type: 'GREEN', title: 'GREEN FLAG', msg: 'TRACK CLEAR', isCaution: false };
+      }
+
+      const list = raceControlData.RaceControl;
+      const activeSectorFlags = {};
+      let trackFlag = 'GREEN';
+      let latestSignificantItem = null;
+
+      list.forEach(item => {
+        const flag = (item.Flag || '').toUpperCase();
+        const scope = (item.Scope || '').toUpperCase();
+        const sector = item.Sector;
+        const msg = (item.Message || '').toUpperCase();
+
+        if (scope === 'TRACK') {
+          if (flag === 'RED') {
+            trackFlag = 'RED';
+            latestSignificantItem = item;
+          } else if (flag === 'CLEAR' || flag === 'GREEN') {
+            trackFlag = 'GREEN';
+            latestSignificantItem = item;
+          } else if (flag === 'CHEQUERED') {
+            trackFlag = 'CHEQUERED';
+            latestSignificantItem = item;
+          } else if (msg.includes('SAFETY CAR') || msg.includes('VSC')) {
+            trackFlag = msg.includes('VSC') ? 'VSC' : 'SC';
+            latestSignificantItem = item;
+          }
+        } else if (scope === 'SECTOR' && sector !== undefined) {
+          if (flag === 'CLEAR') {
+            delete activeSectorFlags[sector];
+          } else if (flag === 'YELLOW' || flag === 'DOUBLE YELLOW') {
+            activeSectorFlags[sector] = flag;
+            latestSignificantItem = item;
+          }
+        }
+      });
+
+      const activeSectors = Object.keys(activeSectorFlags).map(Number).sort((a, b) => a - b);
+
+      if (trackFlag === 'RED') {
+        return {
+          type: 'RED',
+          title: 'RED FLAG',
+          msg: (latestSignificantItem && latestSignificantItem.Message) || 'SESSION SUSPENDED',
+          isCaution: true
+        };
+      }
+
+      if (trackFlag === 'SC') {
+        return {
+          type: 'SC',
+          title: 'SAFETY CAR',
+          msg: (latestSignificantItem && latestSignificantItem.Message) || 'SAFETY CAR DEPLOYED',
+          isCaution: true
+        };
+      }
+
+      if (trackFlag === 'VSC') {
+        return {
+          type: 'VSC',
+          title: 'VIRTUAL SAFETY CAR',
+          msg: (latestSignificantItem && latestSignificantItem.Message) || 'VSC DEPLOYED',
+          isCaution: true
+        };
+      }
+
+      if (trackFlag === 'CHEQUERED') {
+        return {
+          type: 'CHEQUERED',
+          title: 'CHEQUERED FLAG',
+          msg: 'SESSION FINISHED',
+          isCaution: false
+        };
+      }
+
+      if (activeSectors.length > 0) {
+        const isDouble = Object.values(activeSectorFlags).some(f => f.includes('DOUBLE'));
+        const sectorListStr = activeSectors.join(', ');
+        return {
+          type: isDouble ? 'DOUBLE_YELLOW' : 'YELLOW',
+          title: isDouble ? 'DOUBLE YELLOW' : 'YELLOW FLAG',
+          msg: `SECTOR ${sectorListStr}`,
+          sectors: activeSectors,
+          isCaution: true
+        };
+      }
+
+      return {
+        type: 'GREEN',
+        title: 'GREEN FLAG',
+        msg: 'TRACK CLEAR',
+        isCaution: false
       };
     }
   }

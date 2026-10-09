@@ -108,6 +108,20 @@
   const btnRestartTower = document.getElementById('btn-restart-tower');
   const btnStartReplayLap1 = document.getElementById('btn-start-replay-lap1');
 
+  // Flag Alert & Viewport Elements
+  const appViewport = document.getElementById('app');
+  const flagBannerEl = document.getElementById('flag-alert-banner');
+  const flagBadgePill = document.getElementById('flag-badge-pill');
+  const flagMsgText = document.getElementById('flag-msg-text');
+  const btnCloseFlag = document.getElementById('btn-close-flag');
+  const btnSplitPrevTeam = document.getElementById('btn-split-prev-team');
+  const btnSplitNextTeam = document.getElementById('btn-split-next-team');
+
+  let currentFlagState = null;
+  let flagDismissedUntilChange = false;
+  let lastFlagType = 'GREEN';
+  let greenBannerTimer = null;
+
   // Notifications
   const toastEl = document.getElementById('toast');
   const connErrorEl = document.getElementById('connection-error');
@@ -361,7 +375,12 @@
     driverCodeEl.textContent = d.code;
     driverNumEl.textContent = d.number;
     teamStripe.style.backgroundColor = d.color || '#FF8000';
-    currentTeamIndex = d.teamIndex !== undefined ? d.teamIndex : 0;
+    if (d.teamIndex !== undefined) {
+      currentTeamIndex = d.teamIndex;
+    } else if (teams && teams.length > 0) {
+      const foundIdx = teams.findIndex(t => t.drivers && t.drivers.some(td => td.number === d.number));
+      if (foundIdx !== -1) currentTeamIndex = foundIdx;
+    }
   }
 
   // Select Driver explicitly (from Standings list)
@@ -384,15 +403,23 @@
     fetchHUDTelemetry();
   }
 
-  // Cycle Teams (Scroll Wheel in Split View)
+  // Cycle Teams (Scroll Wheel, Navigation Buttons, or Touch Swipe in Split View)
   function cycleTeam(delta) {
     if (!teams || teams.length === 0) return;
     currentTeamIndex = (currentTeamIndex + delta + teams.length) % teams.length;
     const team = teams[currentTeamIndex];
-    const dIdx = drivers.findIndex(d => d.number === team.drivers[0].number);
-    if (dIdx !== -1) currentDriverIndex = dIdx;
-    updateHUDDriverHeader();
-    showToast(`${team.shortName}`);
+    if (team && team.drivers && team.drivers.length > 0) {
+      const dIdx = drivers.findIndex(d => d.number === team.drivers[0].number);
+      if (dIdx !== -1) {
+        currentDriverIndex = dIdx;
+        const d = drivers[dIdx];
+        driverCodeEl.textContent = d.code;
+        driverNumEl.textContent = d.number;
+        teamStripe.style.backgroundColor = d.color || '#FF8000';
+      }
+    }
+    const teamTitle = (team.shortName || team.name || 'TEAM').toUpperCase();
+    showToast(`TEAM: ${teamTitle}`);
     fetchSplitTelemetry();
   }
 
@@ -424,11 +451,88 @@
     switchView(sequence[nextIdx]);
   }
 
-  // Update Shift Lights
+  // Flag Alert & Cockpit Warning Controller
+  function updateFlagDisplay(flagState) {
+    if (!flagState || !flagBannerEl) return;
+    currentFlagState = flagState;
+    const currentType = flagState.type;
+
+    if (flagDismissedUntilChange && currentType === lastFlagType) {
+      return;
+    }
+    if (currentType !== lastFlagType) {
+      flagDismissedUntilChange = false;
+    }
+
+    // Clean up animation classes
+    flagBannerEl.classList.remove('flag-yellow', 'flag-red', 'flag-sc', 'flag-green', 'flag-chequered');
+    if (appViewport) {
+      appViewport.classList.remove('flash-yellow-border', 'flash-red-border', 'flash-green-border');
+    }
+
+    if (flagState.isCaution) {
+      clearTimeout(greenBannerTimer);
+      flagBannerEl.classList.remove('hidden');
+
+      if (currentType === 'YELLOW' || currentType === 'DOUBLE_YELLOW') {
+        flagBannerEl.classList.add('flag-yellow');
+        if (appViewport) appViewport.classList.add('flash-yellow-border');
+        flagBadgePill.textContent = currentType === 'DOUBLE_YELLOW' ? '⚠️ DBL YEL' : '🟡 YELLOW';
+        flagMsgText.textContent = flagState.msg || 'CAUTION IN SECTOR';
+      } else if (currentType === 'RED') {
+        flagBannerEl.classList.add('flag-red');
+        if (appViewport) appViewport.classList.add('flash-red-border');
+        flagBadgePill.textContent = '🔴 RED FLAG';
+        flagMsgText.textContent = flagState.msg || 'SESSION SUSPENDED';
+      } else if (currentType === 'SC' || currentType === 'VSC') {
+        flagBannerEl.classList.add('flag-sc');
+        if (appViewport) appViewport.classList.add('flash-yellow-border');
+        flagBadgePill.textContent = currentType === 'VSC' ? '🟡 VSC' : '🟡 SAFETY CAR';
+        flagMsgText.textContent = flagState.msg || 'DEPLOYED';
+      }
+    } else if (currentType === 'CHEQUERED') {
+      flagBannerEl.classList.remove('hidden');
+      flagBannerEl.classList.add('flag-chequered');
+      flagBadgePill.textContent = '🏁 FINISH';
+      flagMsgText.textContent = 'CHEQUERED FLAG';
+    } else if (currentType === 'GREEN') {
+      if (lastFlagType && lastFlagType !== 'GREEN') {
+        // Just transitioned from caution to green
+        flagBannerEl.classList.remove('hidden');
+        flagBannerEl.classList.add('flag-green');
+        if (appViewport) appViewport.classList.add('flash-green-border');
+        flagBadgePill.textContent = '🟢 GREEN';
+        flagMsgText.textContent = 'TRACK CLEAR';
+
+        clearTimeout(greenBannerTimer);
+        greenBannerTimer = setTimeout(() => {
+          flagBannerEl.classList.add('hidden');
+          if (appViewport) appViewport.classList.remove('flash-green-border');
+        }, 3500);
+      } else if (!flagBannerEl.classList.contains('flag-green')) {
+        flagBannerEl.classList.add('hidden');
+      }
+    }
+
+    lastFlagType = currentType;
+  }
+
+  // Update Shift Lights (Including Marshalling Lights Override)
   function updateShiftLights(rpmPct) {
+    if (currentFlagState && currentFlagState.isCaution) {
+      const isYellow = currentFlagState.type === 'YELLOW' || currentFlagState.type === 'DOUBLE_YELLOW' || currentFlagState.type === 'SC' || currentFlagState.type === 'VSC';
+      const isRed = currentFlagState.type === 'RED';
+      leds.forEach(led => {
+        led.classList.remove('active', 'flash-purple', 'flag-led-yellow', 'flag-led-red', 'flag-led-green');
+        if (isYellow) led.classList.add('flag-led-yellow');
+        else if (isRed) led.classList.add('flag-led-red');
+      });
+      return;
+    }
+
     const activeCount = Math.round((rpmPct / 100) * 12);
     leds.forEach((led, idx) => {
-      led.classList.remove('flash-purple');
+      led.classList.remove('flash-purple', 'flag-led-yellow', 'flag-led-red', 'flag-led-green');
       if (idx < activeCount) {
         led.classList.add('active');
         if (rpmPct > 95 && idx >= 8) {
@@ -599,7 +703,7 @@
         const sim2 = window.F1Simulator ? window.F1Simulator.getDriverTelemetry(d2.number) : {};
 
         teamData = {
-          teamShort: (team.name || 'TEAM').toUpperCase(),
+          teamShort: (team.shortName || team.name || 'TEAM').toUpperCase(),
           teamColor: team.color || '#FE5000',
           delta: `${(Math.abs(d2.pos - d1.pos) * 0.35 + 0.12).toFixed(2)}s`,
           d1: {
@@ -610,8 +714,8 @@
             drs: sim1.drs || 0,
             brake: sim1.brake || 0,
             throttle: sim1.throttle || 100,
-            tire: d1.tire || 'S',
-            tireAge: d1.tireAge || 8
+            tire: d1.tire || 'M',
+            tireAge: d1.tireAge !== undefined ? d1.tireAge : 1
           },
           d2: {
             driver: d2.code,
@@ -621,8 +725,8 @@
             drs: sim2.drs || 0,
             brake: sim2.brake || 0,
             throttle: sim2.throttle || 95,
-            tire: d2.tire || 'S',
-            tireAge: d2.tireAge || 8
+            tire: d2.tire || 'M',
+            tireAge: d2.tireAge !== undefined ? d2.tireAge : 1
           }
         };
       } else if (window.F1Simulator) {
@@ -668,7 +772,25 @@
     }
   }
 
+  async function checkFlagStatus() {
+    try {
+      let flagState = null;
+      if (activeMode === 'LIVE' && window.F1LiveTiming) {
+        const rcData = await window.F1LiveTiming.getRaceControl();
+        flagState = window.F1LiveTiming.parseFlagState(rcData);
+      } else if (window.F1Simulator) {
+        flagState = window.F1Simulator.getFlagState();
+      }
+      if (flagState) {
+        updateFlagDisplay(flagState);
+      }
+    } catch (e) {
+      console.warn('[RF1] Flag check error:', e);
+    }
+  }
+
   function refreshActiveView() {
+    checkFlagStatus();
     if (activeView === 'hud') fetchHUDTelemetry();
     else if (activeView === 'split') fetchSplitTelemetry();
     else if (activeView === 'tower') fetchTowerData();
@@ -794,7 +916,66 @@
       if (team) selectDriver(team.drivers[1].number);
     });
 
-    // 7. Device Sleep / Wake
+    // 7. Teammate Split Team Navigation Arrows & Title
+    if (btnSplitPrevTeam) {
+      btnSplitPrevTeam.addEventListener('click', (e) => {
+        e.stopPropagation();
+        cycleTeam(-1);
+      });
+    }
+    if (btnSplitNextTeam) {
+      btnSplitNextTeam.addEventListener('click', (e) => {
+        e.stopPropagation();
+        cycleTeam(1);
+      });
+    }
+    if (splitTeamName) {
+      splitTeamName.addEventListener('click', (e) => {
+        e.stopPropagation();
+        cycleTeam(1);
+      });
+    }
+
+    // Touch Swipe Gestures for Split View
+    const splitViewEl = document.getElementById('view-split');
+    if (splitViewEl) {
+      let touchStartX = 0;
+      let touchStartY = 0;
+      splitViewEl.addEventListener('touchstart', (e) => {
+        if (e.touches && e.touches.length > 0) {
+          touchStartX = e.touches[0].clientX;
+          touchStartY = e.touches[0].clientY;
+        }
+      }, { passive: true });
+
+      splitViewEl.addEventListener('touchend', (e) => {
+        if (e.changedTouches && e.changedTouches.length > 0) {
+          const diffX = e.changedTouches[0].clientX - touchStartX;
+          const diffY = e.changedTouches[0].clientY - touchStartY;
+          if (Math.abs(diffX) > Math.abs(diffY)) {
+            if (diffX < -25) cycleTeam(1); // Swipe left -> Next team
+            else if (diffX > 25) cycleTeam(-1); // Swipe right -> Prev team
+          } else {
+            if (diffY < -25) cycleTeam(1); // Swipe up -> Next team
+            else if (diffY > 25) cycleTeam(-1); // Swipe down -> Prev team
+          }
+        }
+      }, { passive: true });
+    }
+
+    // 8. Flag Banner Dismiss
+    if (btnCloseFlag) {
+      btnCloseFlag.addEventListener('click', (e) => {
+        e.stopPropagation();
+        flagDismissedUntilChange = true;
+        if (flagBannerEl) flagBannerEl.classList.add('hidden');
+        if (appViewport) {
+          appViewport.classList.remove('flash-yellow-border', 'flash-red-border');
+        }
+      });
+    }
+
+    // 9. Device Sleep / Wake
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {
         console.log('[RF1] Display woke, resuming telemetry');

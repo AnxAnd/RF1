@@ -1076,3 +1076,234 @@ body {
 .connection-error.hidden {
   display: none;
 }
+
+/* ====================================================
+   FLAG ALERT BANNER & COCKPIT WARNING FLASH
+   ==================================================== */
+.flag-alert-banner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 26px;
+  z-index: 150;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.85);
+  transition: transform 0.25s cubic-bezier(0.1, 0.9, 0.2, 1), opacity 0.2s ease;
+}
+
+.flag-alert-banner.hidden {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.flag-content {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.flag-badge-pill {
+  font-size: 8px;
+  font-weight: 900;
+  padding: 2px 5px;
+  border-radius: 2px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.flag-msg-text {
+  font-size: 9px;
+  font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+}
+
+.flag-close-btn {
+  background: transparent;
+  border: none;
+  font-size: 10px;
+  opacity: 0.75;
+  cursor: pointer;
+  padding: 2px 4px;
+  color: inherit;
+  flex-shrink: 0;
+}
+
+.flag-close-btn:active {
+  opacity: 1;
+  transform: scale(1.15);
+}
+
+/* Flag Color Variants */
+/* 1. Yellow Flag / Double Yellow */
+.flag-alert-banner.flag-yellow {
+  background: #FFE600;
+  color: #000000;
+  animation: flagFlashYellowBg 0.7s infinite alternate;
+}
+.flag-alert-banner.flag-yellow .flag-badge-pill {
+  background: #000000;
+  color: #FFE600;
+}
+
+/* 2. Red Flag */
+.flag-alert-banner.flag-red {
+  background: #E10600;
+  color: #FFFFFF;
+  animation: flagFlashRedBg 0.5s infinite alternate;
+}
+.flag-alert-banner.flag-red .flag-badge-pill {
+  background: #FFFFFF;
+  color: #E10600;
+}
+
+/* 3. Safety Car / VSC */
+.flag-alert-banner.flag-sc {
+  background: #FF9800;
+  color: #000000;
+  animation: flagFlashYellowBg 0.9s infinite alternate;
+}
+.flag-alert-banner.flag-sc .flag-badge-pill {
+  background: #000000;
+  color: #FF9800;
+}
+
+/* 4. Green Flag / Clear */
+.flag-alert-banner.flag-green {
+  background: #00D26A;
+  color: #000000;
+}
+.flag-alert-banner.flag-green .flag-badge-pill {
+  background: #000000;
+  color: #00E676;
+}
+
+/* 5. Chequered Flag */
+.flag-alert-banner.flag-chequered {
+  background: #FFFFFF;
+  color: #000000;
+  background-image: repeating-linear-gradient(45deg, #000 0, #000 6px, #fff 6px, #fff 12px);
+}
+.flag-alert-banner.flag-chequered .flag-content {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 2px 6px;
+  border-radius: 2px;
+}
+
+/* Screen Cockpit Border Flashing */
+.r1-viewport.flash-yellow-border {
+  animation: cockpitBorderFlashYellow 0.7s infinite alternate !important;
+}
+
+.r1-viewport.flash-red-border {
+  animation: cockpitBorderFlashRed 0.45s infinite alternate !important;
+}
+
+.r1-viewport.flash-green-border {
+  animation: cockpitBorderFlashGreen 1.4s ease-out !important;
+}
+
+@keyframes cockpitBorderFlashYellow {
+  0% {
+    box-shadow: inset 0 0 16px rgba(255, 230, 0, 0.9), 0 0 20px rgba(255, 230, 0, 0.8);
+    border-color: #FFE600;
+  }
+  100% {
+    box-shadow: inset 0 0 3px rgba(255, 230, 0, 0.25), 0 0 4px rgba(255, 230, 0, 0.2);
+    border-color: rgba(255, 230, 0, 0.35);
+  }
+}
+
+@keyframes cockpitBorderFlashRed {
+  0% {
+    box-shadow: inset 0 0 22px rgba(225, 6, 0, 0.95), 0 0 26px rgba(225, 6, 0, 0.9);
+    border-color: #E10600;
+  }
+  100% {
+    box-shadow: inset 0 0 4px rgba(225, 6, 0, 0.3), 0 0 5px rgba(225, 6, 0, 0.25);
+    border-color: rgba(225, 6, 0, 0.35);
+  }
+}
+
+@keyframes cockpitBorderFlashGreen {
+  0% {
+    box-shadow: inset 0 0 16px rgba(0, 210, 106, 0.85);
+    border-color: #00D26A;
+  }
+  100% {
+    box-shadow: none;
+    border-color: #222222;
+  }
+}
+
+@keyframes flagFlashYellowBg {
+  0% { opacity: 0.92; }
+  100% { opacity: 1; filter: brightness(1.15); }
+}
+
+@keyframes flagFlashRedBg {
+  0% { opacity: 0.9; }
+  100% { opacity: 1; filter: brightness(1.2); }
+}
+
+/* Flag Overrides on Shift LEDs: Marshalling Lights */
+.led.flag-led-yellow {
+  background-color: #FFE600 !important;
+  box-shadow: 0 0 8px #FFE600, 0 0 14px rgba(255, 230, 0, 0.85) !important;
+  animation: ledPulseFast 0.4s infinite alternate !important;
+}
+
+.led.flag-led-red {
+  background-color: #E10600 !important;
+  box-shadow: 0 0 8px #E10600, 0 0 14px rgba(225, 6, 0, 0.9) !important;
+  animation: ledPulseFast 0.3s infinite alternate !important;
+}
+
+.led.flag-led-green {
+  background-color: #00E676 !important;
+  box-shadow: 0 0 8px #00E676 !important;
+}
+
+@keyframes ledPulseFast {
+  0% { opacity: 0.35; }
+  100% { opacity: 1; }
+}
+
+/* ----------------------------------------------------
+   SPLIT VIEW: TEAM NAVIGATION CONTROLS
+   ---------------------------------------------------- */
+.split-team-tag {
+  cursor: pointer;
+  user-select: none;
+}
+
+.team-nav-arrow {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #AAAAAA;
+  font-size: 8px;
+  padding: 1px 4px;
+  border-radius: 2px;
+  cursor: pointer;
+  line-height: 1;
+  transition: all 0.1s ease;
+}
+
+.team-nav-arrow:active, .team-nav-arrow:hover {
+  color: #FFFFFF;
+  background: #2a2a2a;
+  border-color: #FE5000;
+}
+

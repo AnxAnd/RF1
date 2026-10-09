@@ -49,10 +49,10 @@ const RF1Hardware = {
     window.addEventListener('keydown', (e) => {
       if (e.repeat) return;
 
-      if (e.key === 'ArrowUp' || e.key === 'k') {
+      if (e.key === 'ArrowUp' || e.key === 'ArrowLeft' || e.key === 'k') {
         e.preventDefault();
         this.trigger('scrollUp');
-      } else if (e.key === 'ArrowDown' || e.key === 'j') {
+      } else if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === 'j') {
         e.preventDefault();
         this.trigger('scrollDown');
       } else if (e.key === ' ' || e.key === 'Enter' || e.key.toLowerCase() === 'p') {
