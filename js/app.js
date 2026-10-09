@@ -318,7 +318,7 @@
               hudSessionSub.textContent = `${sPart} ${sType}`.toUpperCase();
             }
           }
-          updateTowerTicker(`🇸🇬 SINGAPORE • ${sPart} ${sFriendly} • 🏁 REPLAY`);
+          updateTowerTicker(`🇸🇬 SINGAPORE GRAND PRIX • ${sPart} ${sFriendly} • 🏁 REPLAY`);
 
           updateHUDDriverHeader();
           restartRace();
@@ -367,8 +367,8 @@
       if (hudSessionSub) {
         hudSessionSub.textContent = 'GRAND PRIX';
       }
-      const trackNameUpper = (track.shortName || track.name || track.gp).replace(' GP', '').replace(' GRAND PRIX', '').toUpperCase();
-      updateTowerTicker(`${track.flag} ${trackNameUpper} • GRAND PRIX • 🏁 REPLAY`);
+      const gpTitle = (track.gp ? track.gp.replace(' GP', ' GRAND PRIX') : (track.name || track.shortName)).toUpperCase();
+      updateTowerTicker(`${track.flag} ${gpTitle} • GRAND PRIX • 🏁 REPLAY`);
 
       showToast(`${track.flag} ${track.gp}`);
     }
@@ -916,13 +916,13 @@
         data = window.F1Simulator.getDriverTelemetry(current.number);
         const track = window.TrackManager ? window.TrackManager.getTrackById(currentTrackId) : null;
         const flag = track ? track.flag : '🏁';
-        const trackNameUpper = (track ? (track.shortName || track.name) : 'SINGAPORE').toUpperCase();
+        const gpTitle = (track ? (track.gp ? track.gp.replace(' GP', ' GRAND PRIX') : track.shortName) : 'SINGAPORE GRAND PRIX').toUpperCase();
         let part = data.sessionPart || (data.isRace ? 'GRAND PRIX' : 'QUALI');
         if (part === 'RACE') part = 'GRAND PRIX';
         else if (part === 'SQ3' || part === 'SQ2' || part === 'SQ1') part = `${part} SPRINT QUALI`;
         else if (part === 'Q3' || part === 'Q2' || part === 'Q1') part = `${part} QUALIFYING`;
         else if (part === 'FP1' || part === 'FP2' || part === 'FP3') part = `${part} PRACTICE`;
-        const tickerStr = `${flag} ${trackNameUpper} • ${part} • 🏁 REPLAY`;
+        const tickerStr = `${flag} ${gpTitle} • ${part} • 🏁 REPLAY`;
         updateSessionTicker(tickerStr);
       } else if (activeMode === 'LIVE' && window.OpenF1) {
         data = await window.OpenF1.getTelemetry(current.number);
@@ -1065,13 +1065,13 @@
         }
         const track = window.TrackManager ? window.TrackManager.getTrackById(currentTrackId) : null;
         const flag = track ? track.flag : '🏁';
-        const trackNameUpper = (track ? (track.shortName || track.name) : 'SINGAPORE').toUpperCase();
+        const gpTitle = (track ? (track.gp ? track.gp.replace(' GP', ' GRAND PRIX') : track.shortName) : 'SINGAPORE GRAND PRIX').toUpperCase();
         let part = telem.sessionPart || (telem.isRace ? 'GRAND PRIX' : 'QUALI');
         if (part === 'RACE') part = 'GRAND PRIX';
         else if (part === 'SQ3' || part === 'SQ2' || part === 'SQ1') part = `${part} SPRINT QUALI`;
         else if (part === 'Q3' || part === 'Q2' || part === 'Q1') part = `${part} QUALIFYING`;
         else if (part === 'FP1' || part === 'FP2' || part === 'FP3') part = `${part} PRACTICE`;
-        const tickerStr = `${flag} ${trackNameUpper} • ${part} • 🏁 REPLAY`;
+        const tickerStr = `${flag} ${gpTitle} • ${part} • 🏁 REPLAY`;
         updateTowerTicker(tickerStr);
       }
       connErrorEl.classList.add('hidden');

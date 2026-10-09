@@ -347,10 +347,12 @@
       else if (cCode === 'CAN' || shortCircuit.includes('MONTREAL') || shortCircuit.includes('CANADA')) flag = '🇨🇦';
       else if (cCode === 'AUT' || shortCircuit.includes('RED BULL RING') || shortCircuit.includes('SPIELBERG')) flag = '🇦🇹';
 
+      const grandPrixTitle = mName.includes('GRAND PRIX') || mName.includes('GP') ? mName : `${shortCircuit} GRAND PRIX`;
       const tickerBadge = `${part} ${friendlyName.toUpperCase()}`;
       return {
         circuitName: shortCircuit,
         meetingName: mName,
+        grandPrixTitle: grandPrixTitle,
         sessionName: session.Name || friendlyName,
         sessionType: sType,
         friendlyName: friendlyName,
@@ -359,7 +361,7 @@
         isFinalised: isFinalised,
         timeLeftText: timeLeftText,
         flag: flag,
-        tickerText: `${flag} ${shortCircuit} • ${tickerBadge} • ${timeLeftText}`
+        tickerText: `${flag} ${grandPrixTitle} • ${tickerBadge} • ${timeLeftText}`
       };
     }
 
