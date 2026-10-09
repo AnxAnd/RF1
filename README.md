@@ -52,7 +52,7 @@ Navigate effortlessly using the **Side PTT Button** or the persistent bottom nav
 ### 🏭 1. Manufacturer & Teammate Split View (`SPLIT`)
 > *The ultimate pit-wall telemetry comparison between constructor teammates.*
 
-The **Manufacturer Split View** provides an in-depth, side-by-side performance analysis of both drivers for any constructor on the grid (e.g., McLaren `NOR` vs `PIA`, Red Bull `VER` vs `PER`, Ferrari `LEC` vs `HAM`, Mercedes `RUS` vs `ANT`).
+The **Manufacturer Split View** provides an in-depth, side-by-side performance analysis of both drivers for any constructor on the grid (e.g., McLaren `NOR` vs `PIA`, Red Bull `VER` vs `HAD`, Ferrari `LEC` vs `HAM`, Mercedes `RUS` vs `ANT`, Cadillac `PER` vs `BOT`).
 
 ```
 ┌────────────────────────────────────────────────────────┐
@@ -118,9 +118,9 @@ The **Manufacturer Split View** provides an in-depth, side-by-side performance a
 ---
 
 ### 📊 3. Race Timing Tower (`TOWER`)
-> *Live 20-car race classification and timing intervals.*
+> *Live 22-car race classification and timing intervals across all 11 constructor teams.*
 
-* **Full 20-Car Standings**: Instant visibility of the entire grid ordered by track position (`P1` to `P20`).
+* **Full Grid Standings**: Instant visibility of the entire grid ordered by track position (`P1` to `P22`).
 * **Constructor Livery Stripes**: High-visibility team color bars next to each driver abbreviation (`NOR`, `VER`, `LEC`, `HAM`, `PIA`, `RUS`, etc.).
 * **Timing & Gap Intervals**: Real-time delta to leader or car ahead (`LEADER`, `+2.450s`), plus pit status indicators (`IN PIT`, `OUT LAP`).
 * **Tyre Compounds**: Clear circular compound badges (`S`, `M`, `H`, `I`, `W`) displaying each car's current rubber.
@@ -158,16 +158,16 @@ RF1 listens to official FIA race control messages and triggers instant visual wa
 
 ---
 
-## 🏎️ 2026 Formula 1 Driver Grid
+## 🏎️ 2026 Formula 1 Driver Grid & Constructors
 
-RF1 features the updated official **2026 World Championship grid**:
+RF1 features the updated official **2026 World Championship grid** (11 constructor teams, 22 drivers):
 
 | Car # | Driver | Code | Team / Constructor | Team Color |
 |:---:|:---|:---:|:---|:---:|
 | **1** | Lando Norris | `NOR` | McLaren | 🟧 Papaya Orange |
 | **81** | Oscar Piastri | `PIA` | McLaren | 🟧 Papaya Orange |
 | **3** | Max Verstappen | `VER` | Red Bull Racing | 🟦 Dark Navy Blue |
-| **11** | Sergio Perez | `PER` | Red Bull Racing | 🟦 Dark Navy Blue |
+| **6** | Isack Hadjar | `HAD` | Red Bull Racing | 🟦 Dark Navy Blue |
 | **16** | Charles Leclerc | `LEC` | Ferrari | 🟥 Scarlet Red |
 | **44** | Lewis Hamilton | `HAM` | Ferrari | 🟥 Scarlet Red |
 | **63** | George Russell | `RUS` | Mercedes | 🟩 Petronas Cyan |
@@ -175,15 +175,17 @@ RF1 features the updated official **2026 World Championship grid**:
 | **14** | Fernando Alonso | `ALO` | Aston Martin | 🟩 Racing Green |
 | **18** | Lance Stroll | `STR` | Aston Martin | 🟩 Racing Green |
 | **10** | Pierre Gasly | `GAS` | Alpine | 🟦 Alpine Blue |
-| **61** | Jack Doohan | `DOO` | Alpine | 🟦 Alpine Blue |
+| **43** | Franco Colapinto | `COL` | Alpine | 🟦 Alpine Blue |
 | **23** | Alexander Albon | `ALB` | Williams | 🟦 Williams Blue |
 | **55** | Carlos Sainz | `SAI` | Williams | 🟦 Williams Blue |
-| **27** | Nico Hülkenberg | `HUL` | Sauber / Audi | 🟩 Neon Green |
-| **5** | Gabriel Bortoleto | `BOR` | Sauber / Audi | 🟩 Neon Green |
-| **22** | Yuki Tsunoda | `TSU` | Racing Bulls | 🟦 Royal Blue |
+| **27** | Nico Hülkenberg | `HUL` | Audi / Sauber | 🟩 Neon Green |
+| **5** | Gabriel Bortoleto | `BOR` | Audi / Sauber | 🟩 Neon Green |
 | **30** | Liam Lawson | `LAW` | Racing Bulls | 🟦 Royal Blue |
-| **31** | Esteban Ocon | `OCO` | Haas | ⬜ Haas White/Red |
-| **87** | Oliver Bearman | `BEA` | Haas | ⬜ Haas White/Red |
+| **41** | Arvid Lindblad | `LIN` | Racing Bulls | 🟦 Royal Blue |
+| **31** | Esteban Ocon | `OCO` | Haas F1 Team | ⬜ Haas White/Red |
+| **87** | Oliver Bearman | `BEA` | Haas F1 Team | ⬜ Haas White/Red |
+| **11** | Sergio Perez | `PER` | Cadillac F1 Team | ⚪ Platinum Silver |
+| **77** | Valtteri Bottas | `BOT` | Cadillac F1 Team | ⚪ Platinum Silver |
 
 ---
 

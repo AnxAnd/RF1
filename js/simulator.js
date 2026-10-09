@@ -22,7 +22,7 @@
       color: '#3671C6',
       drivers: [
         { number: 3, code: 'VER', name: 'Max Verstappen', compound: 'M', baseTireAge: 1 },
-        { number: 11, code: 'PER', name: 'Sergio Perez', compound: 'H', baseTireAge: 1 }
+        { number: 6, code: 'HAD', name: 'Isack Hadjar', compound: 'H', baseTireAge: 1 }
       ]
     },
     {
@@ -96,13 +96,22 @@
         { number: 27, code: 'HUL', name: 'Nico Hulkenberg', compound: 'M', baseTireAge: 1 },
         { number: 5, code: 'BOR', name: 'Gabriel Bortoleto', compound: 'H', baseTireAge: 1 }
       ]
+    },
+    {
+      name: 'Cadillac F1 Team',
+      shortName: 'CADILLAC',
+      color: '#909090',
+      drivers: [
+        { number: 11, code: 'PER', name: 'Sergio Perez', compound: 'M', baseTireAge: 1 },
+        { number: 77, code: 'BOT', name: 'Valtteri Bottas', compound: 'H', baseTireAge: 1 }
+      ]
     }
   ];
 
   // Circuit-Specific Authentic Finishing Orders
   const TRACK_FINISH_ORDERS = {
     // Singapore 2026 (matches actual live session from today!)
-    singapore: ['VER', 'RUS', 'LEC', 'PIA', 'NOR', 'HAM', 'ANT', 'LAW', 'GAS', 'HUL', 'ALB', 'ALO', 'TSU', 'OCO', 'BEA', 'BOR', 'STR', 'DOO', 'PER', 'SAI'],
+    singapore: ['VER', 'RUS', 'LEC', 'PIA', 'NOR', 'HAM', 'ANT', 'LAW', 'HAD', 'GAS', 'HUL', 'ALB', 'ALO', 'TSU', 'OCO', 'BEA', 'BOR', 'STR', 'DOO', 'PER', 'BOT', 'SAI'],
     // Silverstone (British GP historic home win)
     silverstone: ['HAM', 'VER', 'NOR', 'PIA', 'SAI', 'HUL', 'STR', 'ALO', 'ALB', 'TSU', 'RUS', 'LEC', 'GAS', 'OCO', 'PER', 'ANT', 'LAW', 'DOO', 'BEA', 'BOR'],
     // Monaco (Leclerc home triumph)
