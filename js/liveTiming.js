@@ -153,6 +153,8 @@
           });
         }
 
+        const numLaps = line.NumberOfLaps !== undefined ? parseInt(line.NumberOfLaps, 10) : tyreLaps;
+
         drivers.push({
           number: num,
           code: line.Tla || (line.BroadcastName ? line.BroadcastName.slice(0, 3) : `D${num}`),
@@ -165,6 +167,7 @@
           sectors: sectors,
           tire: currentCompound,
           tireAge: tyreLaps,
+          laps: numLaps,
           inPit: Boolean(line.InPit),
           retired: Boolean(line.Retired)
         });
@@ -242,6 +245,121 @@
         name,
         meeting,
         desc
+      };
+    }
+
+    getSessionDetails(leaderboardData, raceControlData) {
+      const session = (leaderboardData && leaderboardData.Session) || this.lastSession || {};
+      const sType = (session.Type || '').toUpperCase();
+      const sName = (session.Name || '').toUpperCase();
+      const mName = (session.Meeting?.Name || 'Grand Prix').toUpperCase();
+      const shortCircuit = (session.Meeting?.Circuit?.ShortName || session.Meeting?.Location || 'F1').toUpperCase();
+      const status = (session.SessionStatus || '').toUpperCase();
+      const isFinalised = status === 'FINALISED' || (session.ArchiveStatus?.Status || '').toLowerCase() === 'complete';
+
+      let part = 'RACE';
+      let isRace = true;
+      let friendlyName = 'Grand Prix';
+
+      if (sName.includes('SPRINT QUALI') || sName.includes('SHOOTOUT')) {
+        isRace = false;
+        friendlyName = 'Sprint Quali';
+        const lines = (leaderboardData && leaderboardData.Lines) || {};
+        const maxStages = Math.max(0, ...Object.values(lines).map(l => (l.BestLapTimes || []).length || 0));
+        part = maxStages === 3 ? 'SQ3' : (maxStages === 2 ? 'SQ2' : (maxStages === 1 ? 'SQ1' : 'SQ'));
+      } else if (sType.includes('QUALI') || sName.includes('QUALI')) {
+        isRace = false;
+        friendlyName = 'Qualifying';
+        const lines = (leaderboardData && leaderboardData.Lines) || {};
+        const maxStages = Math.max(0, ...Object.values(lines).map(l => (l.BestLapTimes || []).length || 0));
+        part = maxStages === 3 ? 'Q3' : (maxStages === 2 ? 'Q2' : (maxStages === 1 ? 'Q1' : 'Q'));
+      } else if (sName.includes('PRACTICE 1') || sName.includes('FP1')) {
+        isRace = false;
+        part = 'FP1';
+        friendlyName = 'Practice 1';
+      } else if (sName.includes('PRACTICE 2') || sName.includes('FP2')) {
+        isRace = false;
+        part = 'FP2';
+        friendlyName = 'Practice 2';
+      } else if (sName.includes('PRACTICE 3') || sName.includes('FP3')) {
+        isRace = false;
+        part = 'FP3';
+        friendlyName = 'Practice 3';
+      } else if (sName.includes('PRACTICE')) {
+        isRace = false;
+        part = 'FP';
+        friendlyName = 'Practice';
+      } else if (sName.includes('SPRINT')) {
+        isRace = true;
+        part = 'SPRINT';
+        friendlyName = 'Sprint';
+      } else {
+        isRace = true;
+        part = 'RACE';
+        friendlyName = 'Grand Prix';
+      }
+
+      if (raceControlData && Array.isArray(raceControlData.RaceControl)) {
+        for (let i = raceControlData.RaceControl.length - 1; i >= 0; i--) {
+          const msg = (raceControlData.RaceControl[i].Message || '').toUpperCase();
+          if (msg.includes('SQ3')) { if (part.startsWith('SQ')) part = 'SQ3'; break; }
+          if (msg.includes('SQ2')) { if (part.startsWith('SQ') && part !== 'SQ3') part = 'SQ2'; break; }
+          if (msg.includes('Q3')) { if (part.startsWith('Q')) part = 'Q3'; break; }
+          if (msg.includes('Q2')) { if (part.startsWith('Q') && part !== 'Q3') part = 'Q2'; break; }
+        }
+      }
+
+      let timeLeftText = '';
+      if (isFinalised) {
+        timeLeftText = '🏁 FINALISED';
+      } else if (session.EndDate && session.GmtOffset) {
+        try {
+          const offsetParts = session.GmtOffset.split(':').map(Number);
+          const offsetMs = ((offsetParts[0] || 0) * 3600 + (offsetParts[1] || 0) * 60) * 1000;
+          const localEndMs = new Date(session.EndDate).getTime();
+          const utcEndMs = localEndMs - offsetMs;
+          const diffMs = utcEndMs - Date.now();
+          if (diffMs > 0) {
+            const mm = Math.floor(diffMs / 60000);
+            const ss = Math.floor((diffMs % 60000) / 1000);
+            timeLeftText = `⏱️ ${mm}:${ss < 10 ? '0' : ''}${ss} LEFT`;
+          } else {
+            timeLeftText = '🏁 CHEQUERED';
+          }
+        } catch (e) {
+          timeLeftText = 'LIVE';
+        }
+      } else {
+        timeLeftText = 'LIVE';
+      }
+
+      const cCode = (session.Meeting?.Country?.Code || '').toUpperCase();
+      let flag = '🏁';
+      if (cCode === 'SGP' || shortCircuit.includes('SINGAPORE')) flag = '🇸🇬';
+      else if (cCode === 'MON' || shortCircuit.includes('MONACO')) flag = '🇲🇨';
+      else if (cCode === 'GBR' || shortCircuit.includes('SILVERSTONE')) flag = '🇬🇧';
+      else if (cCode === 'BEL' || shortCircuit.includes('SPA')) flag = '🇧🇪';
+      else if (cCode === 'ITA' || shortCircuit.includes('MONZA')) flag = '🇮🇹';
+      else if (cCode === 'JPN' || shortCircuit.includes('SUZUKA')) flag = '🇯🇵';
+      else if (cCode === 'BRA' || shortCircuit.includes('INTERLAGOS')) flag = '🇧🇷';
+      else if (cCode === 'USA' || shortCircuit.includes('AUSTIN') || shortCircuit.includes('MIAMI') || shortCircuit.includes('LAS VEGAS')) flag = '🇺🇸';
+      else if (cCode === 'NLD' || shortCircuit.includes('ZANDVOORT')) flag = '🇳🇱';
+      else if (cCode === 'CAN' || shortCircuit.includes('MONTREAL') || shortCircuit.includes('CANADA')) flag = '🇨🇦';
+      else if (cCode === 'AUT' || shortCircuit.includes('RED BULL RING') || shortCircuit.includes('SPIELBERG')) flag = '🇦🇹';
+
+      const tickerBadge = `${part} ${friendlyName.toUpperCase()}`;
+      return {
+        circuitName: shortCircuit,
+        meetingName: mName,
+        sessionName: session.Name || friendlyName,
+        sessionType: sType,
+        friendlyName: friendlyName,
+        part: part,
+        isRace: isRace,
+        isFinalised: isFinalised,
+        timeLeftText: timeLeftText,
+        flag: flag,
+        tickerText: `${flag} ${shortCircuit} • ${tickerBadge} • ${timeLeftText}`
       };
     }
 

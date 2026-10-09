@@ -147,6 +147,10 @@
       this.currentLap = 1;
       this.topSpeedRef = 310;
       this.isLiveReplay = false;
+      this.isRace = true;
+      this.sessionType = 'Race';
+      this.sessionName = 'Grand Prix';
+      this.sessionPart = 'RACE';
 
       this.initTrackGrid('singapore');
     }
@@ -234,6 +238,8 @@
         const teamColor = line.TeamColour ? `#${line.TeamColour}` : '#FE5000';
         const tla = line.Tla || (line.BroadcastName ? line.BroadcastName.slice(0, 3) : `D${num}`);
 
+        const numLaps = line.NumberOfLaps !== undefined ? parseInt(line.NumberOfLaps, 10) : tyreLaps;
+
         parsedDrivers.push({
           number: num,
           code: tla,
@@ -244,6 +250,7 @@
           basePos: pos,
           compound: compound,
           baseTireAge: tyreLaps,
+          laps: numLaps,
           bestLap: bestLap,
           sectors: sectors
         });
@@ -284,6 +291,35 @@
           this.currentGrandPrix = (sess.Meeting.Name + (sess.Name ? ` - ${sess.Name}` : '')).toUpperCase();
         }
         this.currentTrackName = sess.Meeting?.Name || 'Marina Bay Street Circuit';
+
+        const sType = (sess.Type || '').toUpperCase();
+        const sName = (sess.Name || '').toUpperCase();
+        if (sName.includes('SPRINT QUALI') || sName.includes('SHOOTOUT')) {
+          this.isRace = false;
+          this.sessionType = 'Qualifying';
+          this.sessionName = 'Sprint Qualifying';
+          this.sessionPart = 'SQ3';
+        } else if (sType.includes('QUALI') || sName.includes('QUALI')) {
+          this.isRace = false;
+          this.sessionType = 'Qualifying';
+          this.sessionName = 'Qualifying';
+          this.sessionPart = 'Q3';
+        } else if (sName.includes('PRACTICE')) {
+          this.isRace = false;
+          this.sessionType = 'Practice';
+          this.sessionName = sess.Name || 'Practice';
+          this.sessionPart = sName.includes('2') ? 'FP2' : (sName.includes('3') ? 'FP3' : 'FP1');
+        } else if (sName.includes('SPRINT')) {
+          this.isRace = true;
+          this.sessionType = 'Sprint';
+          this.sessionName = 'Sprint';
+          this.sessionPart = 'SPRINT';
+        } else {
+          this.isRace = true;
+          this.sessionType = 'Race';
+          this.sessionName = 'Grand Prix';
+          this.sessionPart = 'RACE';
+        }
       }
       this.isLiveReplay = true;
       return true;
@@ -317,6 +353,10 @@
         }
       }
       this.initTrackGrid(trackId);
+      this.isRace = true;
+      this.sessionType = 'Race';
+      this.sessionName = 'Grand Prix';
+      this.sessionPart = 'RACE';
     }
 
     getTrackInfo() {
@@ -363,6 +403,8 @@
     }
 
     computeTelemetry(driver, globalIndex) {
+      if (!driver) driver = (this.activeDrivers && this.activeDrivers[0]) || { basePos: 1, code: 'NOR', number: 1, compound: 'M' };
+      if (globalIndex === undefined) globalIndex = (driver.basePos || 1) - 1;
       const now = Date.now();
       const driverOffsetMs = (globalIndex * 1500);
       const elapsed = Math.max(0, now - this.startTime);
@@ -490,7 +532,12 @@
         bestLap: bestLap,
         sectors: sectors,
         lap: currentCompletedLaps,
-        totalLaps: this.totalLaps,
+        totalLaps: this.isRace ? this.totalLaps : null,
+        driverLaps: driver.laps || driver.NumberOfLaps || currentCompletedLaps,
+        isRace: this.isRace,
+        sessionType: this.sessionType,
+        sessionName: this.sessionName,
+        sessionPart: this.sessionPart,
         speed: speed,
         gear: gear === 0 ? 'N' : gear,
         rpm: rpm,

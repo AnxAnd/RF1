@@ -63,6 +63,7 @@
   const tireCompoundEl = document.getElementById('tire-compound');
   const tireAgeEl = document.getElementById('tire-age');
   const lapCounterEl = document.getElementById('lap-counter');
+  const hudSessionSub = document.getElementById('hud-session-sub');
   const leds = document.querySelectorAll('.led');
 
   // Split View Elements
@@ -118,6 +119,8 @@
   // Tower Elements
   const towerSessionEl = document.getElementById('tower-session');
   const towerTrackName = document.getElementById('tower-track-name');
+  const towerTickerText1 = document.getElementById('tower-ticker-text-1');
+  const towerTickerText2 = document.getElementById('tower-ticker-text-2');
   const leaderboardListEl = document.getElementById('leaderboard-list');
 
   // Race Selector Elements
@@ -296,7 +299,24 @@
           const gpName = (rawData.Session?.Meeting?.Name || 'SINGAPORE GP').toUpperCase();
           hudTrackName.textContent = 'SINGAPORE GP';
           splitTrackName.textContent = gpName;
-          towerTrackName.textContent = gpName;
+          if (towerTrackName) towerTrackName.textContent = gpName;
+
+          const sDetails = window.F1LiveTiming ? window.F1LiveTiming.getSessionDetails(rawData) : null;
+          const sPart = sDetails ? sDetails.part : (window.F1Simulator.sessionPart || 'SQ3');
+          const sType = sDetails ? sDetails.sessionType : (window.F1Simulator.sessionType || 'QUALIFYING');
+          const sFriendly = sDetails ? sDetails.friendlyName.toUpperCase() : 'SPRINT QUALI';
+
+          if (towerSessionEl) {
+            towerSessionEl.textContent = window.F1Simulator.isRace ? `L 1/${window.F1Simulator.totalLaps}` : sPart;
+          }
+          if (hudSessionSub) {
+            if (window.F1Simulator.isRace) {
+              hudSessionSub.textContent = window.F1Simulator.sessionPart === 'SPRINT' ? 'SPRINT' : 'GRAND PRIX';
+            } else {
+              hudSessionSub.textContent = `${sPart} ${sType}`.toUpperCase();
+            }
+          }
+          updateTowerTicker(`🇸🇬 SINGAPORE • ${sPart} ${sFriendly} • 🏁 REPLAY`);
 
           updateHUDDriverHeader();
           restartRace();
@@ -337,7 +357,16 @@
       hudTrackFlag.textContent = track.flag;
       hudTrackName.textContent = (track.shortName || track.gp || track.name).replace(' GP', '').replace(' GRAND PRIX', '').toUpperCase();
       splitTrackName.textContent = track.gp;
-      towerTrackName.textContent = track.gp;
+      if (towerTrackName) towerTrackName.textContent = track.gp;
+
+      if (towerSessionEl) {
+        towerSessionEl.textContent = `L 1/${track.laps || 62}`;
+      }
+      if (hudSessionSub) {
+        hudSessionSub.textContent = 'GRAND PRIX';
+      }
+      const trackNameUpper = (track.shortName || track.name || track.gp).replace(' GP', '').replace(' GRAND PRIX', '').toUpperCase();
+      updateTowerTicker(`${track.flag} ${trackNameUpper} • GRAND PRIX • 🏁 REPLAY`);
 
       showToast(`${track.flag} ${track.gp}`);
     }
@@ -389,7 +418,20 @@
             hudTrackFlag.textContent = trackFlag;
             hudTrackName.textContent = trackName.replace(' GRAND PRIX', '').replace(' GP', '');
             splitTrackName.textContent = trackName;
-            towerTrackName.textContent = trackName;
+            if (towerTrackName) towerTrackName.textContent = trackName;
+
+            const sDetails = window.F1LiveTiming.getSessionDetails(rawData);
+            if (towerSessionEl) {
+              towerSessionEl.textContent = sDetails.isRace ? 'LIVE' : sDetails.part;
+            }
+            if (hudSessionSub) {
+              if (sDetails.isRace) {
+                hudSessionSub.textContent = sDetails.part === 'SPRINT' ? 'SPRINT' : 'GRAND PRIX';
+              } else {
+                hudSessionSub.textContent = `${sDetails.part} ${sDetails.sessionType || 'QUALI'}`.toUpperCase();
+              }
+            }
+            updateTowerTicker(sDetails.tickerText);
 
             updateHUDDriverHeader();
             showToast(`🔴 LIVE: ${trackName}`);
@@ -400,6 +442,12 @@
           // Track is not actively running cars right now
           lastFinalisedLiveRawData = rawData;
           const summary = window.F1LiveTiming.getSessionSummary(rawData);
+          const sDetails = window.F1LiveTiming.getSessionDetails(rawData);
+          updateTowerTicker(sDetails.tickerText);
+          if (towerSessionEl) {
+            towerSessionEl.textContent = sDetails.isRace ? 'LIVE' : sDetails.part;
+          }
+
           const titleEl = document.getElementById('no-live-title-el');
           const descEl = document.getElementById('no-live-desc-text');
           const btnReplay = document.getElementById('btn-start-replay-lap1');
@@ -463,6 +511,16 @@
       return { number: 1, code: 'NOR', color: '#FF8000', name: 'Lando Norris', teamIndex: 0 };
     }
     return drivers[currentDriverIndex];
+  }
+
+  function updateTowerTicker(text) {
+    if (!text) return;
+    if (towerTickerText1 && towerTickerText1.textContent !== text) {
+      towerTickerText1.textContent = text;
+    }
+    if (towerTickerText2 && towerTickerText2.textContent !== text) {
+      towerTickerText2.textContent = text;
+    }
   }
 
   function updateHUDDriverHeader() {
@@ -694,7 +752,22 @@
     tireCompoundEl.className = `compound-badge compound-${(data.tire || 'm').toLowerCase()}`;
     const tireAgeVal = data.tireAge !== undefined ? data.tireAge : 1;
     tireAgeEl.textContent = `${tireAgeVal} ${tireAgeVal === 1 ? 'LAP' : 'LAPS'}`;
-    lapCounterEl.textContent = `L ${data.lap || 1}/${data.totalLaps || 62}`;
+
+    const isRace = data.isRace !== false;
+    if (isRace) {
+      lapCounterEl.textContent = `L ${data.lap || 1}/${data.totalLaps || 62}`;
+      if (hudSessionSub) {
+        const isSprint = data.sessionPart === 'SPRINT' || (data.sessionName && data.sessionName.toUpperCase().includes('SPRINT'));
+        hudSessionSub.textContent = isSprint ? 'SPRINT' : 'GRAND PRIX';
+      }
+    } else {
+      const completedLaps = data.driverLaps || data.lap || 1;
+      lapCounterEl.textContent = `${completedLaps} ${completedLaps === 1 ? 'LAP' : 'LAPS'}`;
+      if (hudSessionSub) {
+        const subText = data.sessionPart ? `${data.sessionPart} ${data.sessionType || 'QUALI'}` : (data.sessionType || 'QUALIFYING');
+        hudSessionSub.textContent = subText.toUpperCase();
+      }
+    }
   }
 
   // Render Teammate Split
@@ -815,6 +888,16 @@
           data.gap = liveD.gap;
           data.tire = liveD.tire;
           data.tireAge = liveD.tireAge;
+
+          const raw = lastFinalisedLiveRawData || (window.F1LiveTiming.cache && window.F1LiveTiming.cache.leaderboard);
+          if (raw) {
+            const sDetails = window.F1LiveTiming.getSessionDetails(raw);
+            data.isRace = sDetails.isRace;
+            data.sessionType = sDetails.sessionType;
+            data.sessionPart = sDetails.part;
+            data.sessionName = sDetails.sessionName;
+          }
+          data.driverLaps = liveD.laps || liveD.tireAge || 1;
         }
       } else if (activeMode === 'REPLAY' && window.F1Simulator) {
         data = window.F1Simulator.getDriverTelemetry(current.number);
@@ -922,21 +1005,51 @@
     try {
       let list = null;
       if (activeMode === 'LIVE' && window.F1LiveTiming) {
-        const rawData = await window.F1LiveTiming.getLeaderboard();
-        const liveDrivers = window.F1LiveTiming.parseLeaderboard(rawData);
-        if (liveDrivers && liveDrivers.length) {
-          drivers = liveDrivers;
-          list = liveDrivers.map(d => ({
-            number: d.number,
-            code: d.code,
-            pos: d.pos,
-            gap: d.gap,
-            tire: d.tire,
-            teamColor: d.color
-          }));
+        try {
+          const rawData = await window.F1LiveTiming.getLeaderboard();
+          const rcData = await window.F1LiveTiming.getRaceControl();
+          const liveDrivers = window.F1LiveTiming.parseLeaderboard(rawData);
+          if (liveDrivers && liveDrivers.length) {
+            drivers = liveDrivers;
+            list = liveDrivers.map(d => ({
+              number: d.number,
+              code: d.code,
+              pos: d.pos,
+              gap: d.gap,
+              tire: d.tire,
+              teamColor: d.color
+            }));
+          }
+          const sessionDetails = window.F1LiveTiming.getSessionDetails(rawData, rcData);
+          if (towerSessionEl) {
+            towerSessionEl.textContent = sessionDetails.isRace ? 'LIVE' : sessionDetails.part;
+          }
+          updateTowerTicker(sessionDetails.tickerText);
+        } catch (liveErr) {
+          if (window.F1Simulator) {
+            list = window.F1Simulator.getLeaderboard();
+          }
         }
       } else if (window.F1Simulator) {
         list = window.F1Simulator.getLeaderboard();
+        const telem = window.F1Simulator.computeTelemetry();
+        if (towerSessionEl) {
+          if (telem.isRace) {
+            towerSessionEl.textContent = `L ${telem.lap}/${telem.totalLaps}`;
+          } else {
+            towerSessionEl.textContent = telem.sessionPart || 'QUALI';
+          }
+        }
+        const track = window.TrackManager ? window.TrackManager.getTrackById(currentTrackId) : null;
+        const flag = track ? track.flag : '🏁';
+        const trackNameUpper = (track ? (track.shortName || track.name) : 'SINGAPORE').toUpperCase();
+        let part = telem.sessionPart || (telem.isRace ? 'GRAND PRIX' : 'QUALI');
+        if (part === 'RACE') part = 'GRAND PRIX';
+        else if (part === 'SQ3' || part === 'SQ2' || part === 'SQ1') part = `${part} SPRINT QUALI`;
+        else if (part === 'Q3' || part === 'Q2' || part === 'Q1') part = `${part} QUALIFYING`;
+        else if (part === 'FP1' || part === 'FP2' || part === 'FP3') part = `${part} PRACTICE`;
+        const tickerStr = `${flag} ${trackNameUpper} • ${part} • 🏁 REPLAY`;
+        updateTowerTicker(tickerStr);
       }
       connErrorEl.classList.add('hidden');
       if (list) renderLeaderboard(list);
