@@ -50,6 +50,7 @@
   const hudFlagBadge = document.getElementById('hud-flag-badge');
   const hudTrackFlag = document.getElementById('hud-track-flag');
   const hudTrackName = document.getElementById('hud-track-name');
+  const trackWatermarkSvg = document.getElementById('track-watermark-svg');
   const trackWatermarkPath = document.getElementById('track-watermark-path');
 
   const gearValEl = document.getElementById('gear-val');
@@ -193,8 +194,8 @@
           <div class="race-card-title">${track.flag} ${track.name}</div>
           <div class="race-card-sub">${track.gp} • ${track.season} • ${track.laps} LAPS</div>
         </div>
-        <svg viewBox="0 0 100 100" class="race-card-mini-svg">
-          <path d="${track.svgPath}" fill="none" stroke="#FE5000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+        <svg viewBox="${track.viewBox || '0 0 500 500'}" class="race-card-mini-svg">
+          <path d="${track.svgPath}" fill="none" stroke="#FE5000" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
       `;
 
@@ -286,6 +287,9 @@
 
           const track = window.TrackManager ? window.TrackManager.getTrackById('singapore') : null;
           if (track) {
+            if (trackWatermarkSvg && track.viewBox) {
+              trackWatermarkSvg.setAttribute('viewBox', track.viewBox);
+            }
             trackWatermarkPath.setAttribute('d', track.svgPath);
           }
           hudTrackFlag.textContent = '🇸🇬';
@@ -325,10 +329,13 @@
     const track = window.TrackManager ? window.TrackManager.getTrackById(trackId) : null;
     if (track) {
       // Update background track watermark
+      if (trackWatermarkSvg && track.viewBox) {
+        trackWatermarkSvg.setAttribute('viewBox', track.viewBox);
+      }
       trackWatermarkPath.setAttribute('d', track.svgPath);
       // Update header badges
       hudTrackFlag.textContent = track.flag;
-      hudTrackName.textContent = track.name.replace(' Circuit', '').replace('Autodromo Nazionale ', '').toUpperCase();
+      hudTrackName.textContent = (track.shortName || track.gp || track.name).replace(' GP', '').replace(' GRAND PRIX', '').toUpperCase();
       splitTrackName.textContent = track.gp;
       towerTrackName.textContent = track.gp;
 
@@ -369,7 +376,12 @@
                 trackFlag = '🇸🇬';
                 if (window.TrackManager) {
                   const t = window.TrackManager.getTrackById('singapore');
-                  if (t) trackWatermarkPath.setAttribute('d', t.svgPath);
+                  if (t) {
+                    if (trackWatermarkSvg && t.viewBox) {
+                      trackWatermarkSvg.setAttribute('viewBox', t.viewBox);
+                    }
+                    trackWatermarkPath.setAttribute('d', t.svgPath);
+                  }
                 }
               }
             }

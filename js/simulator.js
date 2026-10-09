@@ -118,7 +118,21 @@
     // Interlagos (São Paulo GP rain masterclass)
     interlagos: ['VER', 'OCO', 'GAS', 'RUS', 'LEC', 'NOR', 'TSU', 'LAW', 'HAM', 'PER', 'SAI', 'ALB', 'HUL', 'ALO', 'STR', 'BEA', 'BOR', 'ANT', 'DOO'],
     // Yas Marina (Abu Dhabi finale)
-    abudhabi: ['NOR', 'SAI', 'LEC', 'HAM', 'RUS', 'VER', 'GAS', 'HUL', 'ALO', 'TSU', 'ALB', 'PER', 'OCO', 'STR', 'ANT', 'LAW', 'BEA', 'DOO', 'BOR']
+    abudhabi: ['NOR', 'SAI', 'LEC', 'HAM', 'RUS', 'VER', 'GAS', 'HUL', 'ALO', 'TSU', 'ALB', 'PER', 'OCO', 'STR', 'ANT', 'LAW', 'BEA', 'DOO', 'BOR'],
+    // Bahrain (Sakhir desert opener)
+    bahrain: ['VER', 'PER', 'SAI', 'LEC', 'RUS', 'NOR', 'HAM', 'PIA', 'ALO', 'STR', 'TSU', 'HUL', 'ALB', 'GAS', 'OCO', 'ANT', 'LAW', 'BEA', 'DOO', 'BOR'],
+    // Miami (Norris maiden victory)
+    miami: ['NOR', 'VER', 'LEC', 'SAI', 'PER', 'HAM', 'TSU', 'RUS', 'ALO', 'OCO', 'HUL', 'ALB', 'GAS', 'STR', 'ANT', 'LAW', 'BEA', 'DOO', 'BOR', 'PIA'],
+    // Barcelona-Catalunya (Spanish GP)
+    catalunya: ['VER', 'NOR', 'HAM', 'RUS', 'LEC', 'SAI', 'PIA', 'PER', 'GAS', 'OCO', 'HUL', 'ALO', 'TSU', 'ALB', 'STR', 'ANT', 'LAW', 'BEA', 'DOO', 'BOR'],
+    // Hungaroring (Piastri maiden victory)
+    hungaroring: ['PIA', 'NOR', 'HAM', 'LEC', 'VER', 'SAI', 'PER', 'RUS', 'TSU', 'STR', 'ALO', 'HUL', 'ALB', 'GAS', 'OCO', 'ANT', 'LAW', 'BEA', 'DOO', 'BOR'],
+    // Zandvoort (Dutch GP)
+    zandvoort: ['NOR', 'VER', 'LEC', 'PIA', 'SAI', 'PER', 'RUS', 'HAM', 'GAS', 'ALO', 'HUL', 'TSU', 'ALB', 'STR', 'OCO', 'ANT', 'LAW', 'BEA', 'DOO', 'BOR'],
+    // Baku (Azerbaijan street race)
+    baku: ['PIA', 'LEC', 'RUS', 'NOR', 'VER', 'ALO', 'ALB', 'HAM', 'BEA', 'HUL', 'GAS', 'TSU', 'STR', 'OCO', 'SAI', 'PER', 'ANT', 'LAW', 'DOO', 'BOR'],
+    // Las Vegas Strip Circuit
+    vegas: ['RUS', 'HAM', 'SAI', 'LEC', 'VER', 'NOR', 'PIA', 'HUL', 'TSU', 'PER', 'ALO', 'ALB', 'STR', 'GAS', 'OCO', 'BEA', 'ANT', 'LAW', 'DOO', 'BOR']
   };
 
   class SimulatorEngine {
