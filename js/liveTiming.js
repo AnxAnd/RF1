@@ -86,23 +86,43 @@
 
         // Extract latest tyre stint
         let currentCompound = 'M';
-        let tyreLaps = 10;
-        if (line.Stints && Array.isArray(line.Stints) && line.Stints.length > 0) {
-          const lastStint = line.Stints[line.Stints.length - 1];
+        let tyreLaps = 1;
+        const stintList = line.Stints ? (Array.isArray(line.Stints) ? line.Stints : Object.values(line.Stints)) : [];
+        if (stintList.length > 0) {
+          const lastStint = stintList[stintList.length - 1];
           if (lastStint.Compound) {
             currentCompound = lastStint.Compound.charAt(0).toUpperCase(); // S, M, H, I, W
           }
           if (lastStint.TotalLaps !== undefined) {
-            tyreLaps = parseInt(lastStint.TotalLaps, 10);
+            tyreLaps = Math.max(0, parseInt(lastStint.TotalLaps, 10) || 0);
           }
         }
 
         // Calculate gap string
         let gap = 'LEADER';
+        const statsDiff = (line.Stats && line.Stats[0] && line.Stats[0].TimeDiffToFastest) ? line.Stats[0].TimeDiffToFastest : '';
+        const rawDiff = line.TimeDiffToFastest || statsDiff || '';
         if (pos > 1) {
-          gap = line.TimeDiffToFastest || line.TimeDiffToPositionAhead || `+${(pos * 0.4).toFixed(3)}s`;
-          if (!gap.startsWith('+') && !gap.startsWith('L') && gap !== 'LEADER') {
-            gap = `+${gap}`;
+          if (rawDiff) {
+            gap = rawDiff.startsWith('+') ? rawDiff : `+${rawDiff}`;
+          } else if (line.InPit) {
+            gap = 'IN PIT';
+          } else if (line.PitOut) {
+            gap = 'OUT LAP';
+          } else if (line.BestLapTime && line.BestLapTime.Value) {
+            gap = line.BestLapTime.Value;
+          } else {
+            gap = 'NO TIME';
+          }
+        } else {
+          if (line.BestLapTime && line.BestLapTime.Value) {
+            gap = line.BestLapTime.Value;
+          } else if (line.InPit) {
+            gap = 'IN PIT';
+          } else if (line.PitOut) {
+            gap = 'OUT LAP';
+          } else {
+            gap = 'P1';
           }
         }
 
