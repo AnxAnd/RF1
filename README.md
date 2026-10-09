@@ -96,6 +96,7 @@ Switch views anytime with the **Side PTT Button**, or tap the persistent bottom 
 Run the smart local preview server:
 
 ```bash
+git clone https://github.com/AnxAnd/RF1.git
 cd RF1
 
 # Option 1: Quick launcher with automatic port selection
