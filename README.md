@@ -7,7 +7,7 @@
 
 A dedicated Formula 1 pit-wall telemetry companion and real-time dashboard engineered specifically for the **Rabbit R1**'s tactile mechanical hardware: its notched physical scroll wheel (`scrollUp`/`scrollDown`), side push-to-talk button (`sideClick`), and 240×282 display.
 
-Keep it propped on your desk or coffee table while watching a Grand Prix to track live telemetry, speed traces, pedal inputs, teammate splits, and gap intervals in real time.
+Keep it propped on your desk or coffee table while watching a Grand Prix to track live telemetry, speed traces, pedal inputs, teammate splits, circuit vector outlines, and gap intervals in real time.
 
 ---
 
@@ -25,11 +25,17 @@ Point your Rabbit R1 camera at the QR code below to launch **RF1**:
 
 ## ✨ Key Features & Architecture
 
+* **Race Selection on Launch (`RACES`)**:
+  * Choose between a **Live Grand Prix** (current season) or **Past Classic Races** (Silverstone, Monaco, Spa, Monza, Austria, Abu Dhabi).
+  * If a Live Race is selected while no track session is active, RF1 presents a dedicated **"NO LIVE RACE DATA"** status screen rather than showing placeholder or mock data.
+* **Dynamic Track Vector Watermark**:
+  * Behind the Cockpit HUD gauges sits a subtle, glowing vector outline of the selected circuit layout.
+  * Displays the flag and circuit title in the header (e.g. `🇬🇧 SILVERSTONE • BRITISH GP`, `🇲🇨 MONACO • MONACO GP`).
+  * Tap the circuit badge in the header anytime to open the Race Selector and change tracks.
 * **Rabbit R1 Native Hardware Bridge**:
-  * **Notched Scroll Wheel (`scrollUp` / `scrollDown`)**: Native rabbitOS event listener to instantly cycle drivers in HUD/Standings or cycle teams in Split view.
-  * **Side PTT Button (`sideClick`)**: One-touch view switcher cycling through `HUD` ➔ `SPLIT` ➔ `TOWER`.
-  * **Side PTT Long Press (`longPressStart`)**: Toggles between `SIM` (Replay Simulator) and `LIVE` (OpenF1).
-* **F1 Steering Wheel Cockpit HUD**:
+  * **Notched Scroll Wheel (`scrollUp` / `scrollDown`)**: Native rabbitOS event listener to cycle drivers in HUD/Standings, cycle teams in Split view, or scroll the race cards in the Race Selector.
+  * **Side PTT Button (`sideClick`)**: One-touch view switcher cycling through `RACES` ➔ `HUD` ➔ `SPLIT` ➔ `TOWER`.
+* **F1 Steering Wheel Cockpit HUD (`HUD`)**:
   * **12-LED Progressive Shift Lights**: 4 Green (0–55% revs), 4 Red (55–85% revs), 4 Blue/Purple (85–100% revs, flashing at rev limiter).
   * **Prominent Gear Display**: Bold numerical gear indicator (`1`–`8`, `N`) with white glow.
   * **Large Digital Speedometer**: Real-time speed readout in `KM/H`.
@@ -37,41 +43,43 @@ Point your Rabbit R1 camera at the QR code below to launch **RF1**:
   * **Dual Responsive Pedal Gauges**: Neon red brake track (`BRK 0-100%`) and electric green throttle track (`THR 0-100%`).
   * **Tire Status & Stint Age**: Compound badges (`S`, `M`, `H`, `I`, `W`) and current tire lap age.
 * **Teammate Split View (`SPLIT`)**:
-  * Head-to-head comparison of both drivers from the active team (e.g. McLaren `NOR` vs `PIA`, Red Bull `VER` vs `PER`, Ferrari `LEC` vs `SAI`, Mercedes `HAM` vs `RUS`).
+  * Head-to-head comparison of both drivers from the active constructor team (e.g. McLaren `NOR` vs `PIA`, Red Bull `VER` vs `PER`, Ferrari `LEC` vs `SAI`, Mercedes `HAM` vs `RUS`).
   * Displays real-time delta between teammates, side-by-side speed/gear, comparative throttle/brake bars, and tire compounds.
-  * Tapping either driver immediately jumps into their Cockpit HUD.
+  * Tapping either driver immediately jumps into their individual Cockpit HUD.
 * **Interactive Standings & Driver Selection (`TOWER`)**:
   * Live race order with gaps, team color accents, and tire compounds.
   * **Direct Selection**: Tapping any driver row selects that driver and returns to their Cockpit HUD.
-* **Dual Operating Modes (`SIM` vs. `LIVE`)**:
-  * **Replay Simulator Engine (`SIM`)**: Built-in 60 FPS physics engine that models dynamic laps around the Silverstone Grand Prix circuit (Turn 1 heavy braking, apex throttle modulation, DRS back straights, and gear shifts). Works 100% offline anytime with zero dependencies.
-  * **OpenF1 Live Bridge (`LIVE`)**: Connects directly to the public [OpenF1 API](https://openf1.org) during active Grand Prix sessions.
-  * **Mode Toggle Button**: Tap the `[SIM]` / `[LIVE]` button in any header to switch modes instantly.
 
 ---
 
-## ⚡ The Three Display Views
+## ⚡ The Four Display Views
 
 Switch views anytime with the **Side PTT Button**, or tap the persistent bottom navigation bar:
 
 ```
-[HUD] ◀────── (Side Button / Nav Tab) ──────▶ [SPLIT] ◀──────▶ [TOWER]
+[RACES] ◀────── (Side Button / Nav Tab) ──────▶ [HUD] ◀──────▶ [SPLIT] ◀──────▶ [TOWER]
 ```
 
-### 1. Cockpit HUD (`HUD`)
-* **Header**: Driver badge (e.g. `[NOR 4]`), team color accent, current position (`P1`), gap to car ahead (`LEADER` or `+1.4s`), and mode toggle.
+### 1. Race Selector (`RACES`)
+* **Launch Screen**: Choose between **Live Grand Prix** or a curated catalogue of past classic races.
+* Displays mini track layouts, lap counts, and track characteristics.
+* Accessible anytime by tapping the circuit name in the HUD header.
+
+### 2. Cockpit HUD (`HUD`)
+* **Circuit Watermark**: Glowing vector outline of the selected track behind the instruments.
+* **Header**: Driver badge (e.g. `[NOR 4]`), team color accent, current position (`P1`), gap to car ahead (`LEADER` or `+1.4s`), and circuit badge.
 * **Shift Lights**: 12-segment RPM LED cluster.
 * **Center Cluster**: Massive Gear readout, digital Speedometer, and active DRS indicator.
 * **Footer**: Twin vertical pedal bars (Brake / Throttle), tire compound badge, and lap counter.
 
-### 2. Teammate Split (`SPLIT`)
-* **Header**: Team name and real-time gap delta between teammates (`Δ +4.47s`).
+### 3. Teammate Split (`SPLIT`)
+* **Header**: Team name, track name, and real-time gap delta between teammates (`Δ +4.47s`).
 * **Columns**: Side-by-side telemetry for Driver 1 vs Driver 2.
 * **Scroll Wheel**: Rolls through all 10 constructor teams.
 * **Touch**: Tapping either teammate's side focuses them on the Cockpit HUD.
 
-### 3. Timing Tower / Standings (`TOWER`)
-* Displays the live race classification.
+### 4. Timing Tower / Standings (`TOWER`)
+* Displays the race classification.
 * Highlights the currently focused driver with team color stripe and active position.
 * **Tappable Rows**: Tap any driver in the list to select them and switch to their HUD!
 
@@ -79,15 +87,15 @@ Switch views anytime with the **Side PTT Button**, or tap the persistent bottom 
 
 ## 🕹️ Rabbit R1 Hardware Controls
 
-| Control | Hardware Event | Action in HUD | Action in Split | Action in Tower |
-|---|---|---|---|---|
-| **Scroll Wheel Down** | `scrollDown` | Next driver | Next team | Next driver |
-| **Scroll Wheel Up** | `scrollUp` | Previous driver | Previous team | Previous driver |
-| **Side Button (PTT)** | `sideClick` | Cycle to `SPLIT` | Cycle to `TOWER` | Cycle to `HUD` |
-| **Side Button Hold** | `longPressStart` | Toggle `SIM` ⟷ `LIVE` | Toggle `SIM` ⟷ `LIVE` | Toggle `SIM` ⟷ `LIVE` |
-| **Tap Driver Row** | Touch `click` | — | Focus driver | Select driver & open HUD |
-| **Tap Mode Button** | Touch `click` | Toggle `SIM` ⟷ `LIVE` | Toggle `SIM` ⟷ `LIVE` | Toggle `SIM` ⟷ `LIVE` |
-| **Bottom Nav Tabs** | Touch `click` | Jump directly to `HUD`, `SPLIT`, or `TOWER` | Jump directly | Jump directly |
+| Control | Hardware Event | Action in Races | Action in HUD | Action in Split | Action in Tower |
+|---|---|---|---|---|---|
+| **Scroll Wheel Down** | `scrollDown` | Scroll race list | Next driver | Next team | Next driver |
+| **Scroll Wheel Up** | `scrollUp` | Scroll race list | Previous driver | Previous team | Previous driver |
+| **Side Button (PTT)** | `sideClick` | Switch to **HUD** | Switch to **SPLIT** | Switch to **TOWER** | Switch to **RACES** |
+| **Tap Race Card** | Touch `click` | Load circuit & HUD | — | — | — |
+| **Tap Driver Row** | Touch `click` | — | — | Focus driver | Select driver & jump to HUD |
+| **Tap Circuit Badge** | Touch `click` | — | Open Race Selector | Open Race Selector | Open Race Selector |
+| **Bottom Nav Tabs** | Touch `click` | Jump directly to `RACES`, `HUD`, `SPLIT`, or `TOWER` | Jump directly | Jump directly | Jump directly |
 
 ---
 
@@ -108,7 +116,6 @@ npm start
 
 * Use mouse wheel or `↑`/`↓` arrow keys to simulate the Rabbit R1 hardware scroll wheel.
 * Press `Space` or `P` key to simulate the Rabbit R1 side PTT button (`sideClick`).
-* Press `M` key to simulate long press mode toggle.
 
 ---
 

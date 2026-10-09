@@ -1,5 +1,5 @@
 // RF1 — High-Fidelity F1 Race Telemetry Simulator Engine
-// Supports single-driver HUD telemetry and dual-driver Teammate Split views
+// Supports dynamic circuit selection, single-driver HUD telemetry, and dual-driver Teammate Split
 
 (function(root) {
   'use strict';
@@ -97,7 +97,6 @@
     }
   ];
 
-  // Flattened drivers array
   const ALL_DRIVERS = [];
   TEAMS.forEach((team, teamIdx) => {
     team.drivers.forEach(d => {
@@ -114,9 +113,43 @@
   class SimulatorEngine {
     constructor() {
       this.startTime = Date.now();
-      this.lapDurationMs = 85000; // 85 seconds per simulated lap
-      this.currentLap = 42;
+      this.currentTrackId = 'silverstone';
+      this.currentTrackName = 'Silverstone Circuit';
+      this.currentGrandPrix = 'BRITISH GP';
+      this.currentFlag = '🇬🇧';
       this.totalLaps = 52;
+      this.lapDurationMs = 85000;
+      this.currentLap = 38;
+      this.topSpeedRef = 338;
+    }
+
+    setTrack(trackId) {
+      this.currentTrackId = trackId;
+      const tm = (typeof window !== 'undefined' && window.TrackManager) ? window.TrackManager : null;
+      if (tm) {
+        const t = tm.getTrackById(trackId);
+        if (t) {
+          this.currentTrackName = t.name;
+          this.currentGrandPrix = t.gp;
+          this.currentFlag = t.flag;
+          this.totalLaps = t.laps;
+          this.lapDurationMs = (t.lapTimeSec || 85) * 1000;
+          this.topSpeedRef = t.topSpeed || 330;
+          this.currentLap = Math.floor(t.laps * 0.7); // Start 70% into the race
+          this.startTime = Date.now();
+        }
+      }
+    }
+
+    getTrackInfo() {
+      return {
+        id: this.currentTrackId,
+        name: this.currentTrackName,
+        gp: this.currentGrandPrix,
+        flag: this.currentFlag,
+        laps: this.totalLaps,
+        lap: this.currentLap
+      };
     }
 
     getTeams() {
@@ -147,7 +180,7 @@
       const cycleProgress = (elapsed % this.lapDurationMs) / this.lapDurationMs;
 
       const currentCompletedLaps = this.currentLap + Math.floor(elapsed / this.lapDurationMs);
-      const tireAge = driver.baseTireAge + Math.floor((currentCompletedLaps - 42) / 2);
+      const tireAge = driver.baseTireAge + Math.floor((currentCompletedLaps - 38) / 2);
 
       let speed = 0;
       let gear = 1;
@@ -156,10 +189,14 @@
       let brake = 0;
       let drs = 0;
 
+      // Speed profile scaled to circuit top speed
+      const maxSpd = this.topSpeedRef;
+      const cornerSpd = Math.round(maxSpd * 0.28);
+
       if (cycleProgress < 0.22) {
-        // Main Straight (DRS Active, up to 338 km/h)
+        // Main Straight (DRS Active)
         const p = cycleProgress / 0.22;
-        speed = Math.floor(220 + p * 118);
+        speed = Math.floor(cornerSpd * 2.2 + p * (maxSpd - cornerSpd * 2.2));
         gear = speed > 300 ? 8 : (speed > 260 ? 7 : 6);
         rpm = 10500 + Math.floor(p * 2200);
         throttle = 100;
@@ -168,43 +205,43 @@
       } else if (cycleProgress < 0.29) {
         // Turn 1 Heavy Braking Zone
         const p = (cycleProgress - 0.22) / 0.07;
-        speed = Math.floor(338 - p * 242);
+        speed = Math.floor(maxSpd - p * (maxSpd - cornerSpd));
         gear = speed > 220 ? 6 : (speed > 160 ? 4 : (speed > 115 ? 3 : 2));
         rpm = 7500 + Math.floor((1 - p) * 4500);
         throttle = 0;
         brake = Math.floor(95 - p * 40);
         drs = 0;
       } else if (cycleProgress < 0.48) {
-        // Medium speed curves (Turns 2 - 5)
+        // Technical curves
         const p = (cycleProgress - 0.29) / 0.19;
-        speed = Math.floor(100 + Math.sin(p * Math.PI * 3) * 45 + p * 90);
+        speed = Math.floor(cornerSpd + Math.sin(p * Math.PI * 3) * 45 + p * 90);
         gear = speed > 180 ? 5 : (speed > 140 ? 4 : 3);
         rpm = 8200 + Math.floor(Math.sin(p * Math.PI * 4) * 2800);
         throttle = Math.floor(45 + Math.sin(p * Math.PI * 2) * 40);
         brake = throttle < 40 ? Math.floor(30 + Math.random() * 20) : 0;
         drs = 0;
       } else if (cycleProgress < 0.68) {
-        // Wellington / Back Straight (DRS Zone 2)
+        // Back Straight (DRS Zone 2)
         const p = (cycleProgress - 0.48) / 0.20;
-        speed = Math.floor(200 + p * 125);
+        speed = Math.floor(200 + p * (maxSpd - 200));
         gear = speed > 305 ? 8 : (speed > 265 ? 7 : (speed > 225 ? 6 : 5));
         rpm = 10000 + Math.floor(p * 2600);
         throttle = 100;
         brake = 0;
         drs = speed > 260 ? 1 : 0;
       } else if (cycleProgress < 0.77) {
-        // Chicane / Hairpin Braking
+        // Hairpin Braking
         const p = (cycleProgress - 0.68) / 0.09;
-        speed = Math.floor(325 - p * 230);
+        speed = Math.floor(maxSpd - p * (maxSpd - cornerSpd));
         gear = speed > 210 ? 5 : (speed > 150 ? 4 : 2);
         rpm = 7000 + Math.floor((1 - p) * 4000);
         throttle = 0;
         brake = Math.floor(90 - p * 30);
         drs = 0;
       } else {
-        // Final sweeping corners into main straight
+        // Final sweeps
         const p = (cycleProgress - 0.77) / 0.23;
-        speed = Math.floor(110 + p * 120);
+        speed = Math.floor(cornerSpd + p * 120);
         gear = speed > 200 ? 6 : (speed > 160 ? 5 : 4);
         rpm = 8800 + Math.floor(p * 2800);
         throttle = Math.floor(65 + p * 35);
@@ -212,7 +249,7 @@
         drs = 0;
       }
 
-      speed = Math.max(0, Math.min(360, speed));
+      speed = Math.max(0, Math.min(365, speed));
       rpm = Math.max(3000, Math.min(13500, rpm));
       throttle = Math.max(0, Math.min(100, throttle));
       brake = Math.max(0, Math.min(100, brake));
@@ -244,7 +281,11 @@
         drs: drs,
         tire: driver.compound,
         tireAge: tireAge,
-        mode: 'SIM'
+        mode: 'REPLAY',
+        trackId: this.currentTrackId,
+        trackName: this.currentTrackName,
+        grandPrix: this.currentGrandPrix,
+        flag: this.currentFlag
       };
     }
 
@@ -263,8 +304,6 @@
 
       const t1 = this.computeTelemetry(d1, ALL_DRIVERS.indexOf(d1));
       const t2 = this.computeTelemetry(d2, ALL_DRIVERS.indexOf(d2));
-
-      // Compute teammate delta
       const deltaSec = Math.abs(t1.pos - t2.pos) * 1.45 + (Math.sin(Date.now() / 12000) * 0.3);
 
       return {
@@ -274,7 +313,11 @@
         delta: `+${deltaSec.toFixed(2)}s`,
         d1: t1,
         d2: t2,
-        mode: 'SIM'
+        mode: 'REPLAY',
+        trackId: this.currentTrackId,
+        trackName: this.currentTrackName,
+        grandPrix: this.currentGrandPrix,
+        flag: this.currentFlag
       };
     }
 
@@ -294,7 +337,7 @@
           teamColor: d.teamColor,
           gap: gap,
           tire: d.compound,
-          tireAge: d.baseTireAge + Math.floor((this.currentLap - 40) / 2)
+          tireAge: d.baseTireAge + Math.floor((this.currentLap - 38) / 2)
         };
       });
     }

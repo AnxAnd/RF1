@@ -14,9 +14,35 @@
     <main id="app" class="r1-viewport" tabindex="0">
       
       <!-- ==============================================
+           VIEW 0: RACE SELECTOR (LAUNCH SCREEN)
+           ============================================== -->
+      <section id="view-races" class="view active">
+        <header class="races-header">
+          <span class="races-header-title">SELECT RACE</span>
+          <span class="races-header-sub">2024 SEASON</span>
+        </header>
+
+        <div class="races-list-container">
+          <!-- 1. LIVE RACE OPTION -->
+          <div class="race-card race-card-live" id="race-option-live">
+            <div class="race-live-dot"></div>
+            <div class="race-card-info">
+              <div class="race-card-title">🔴 LIVE GRAND PRIX</div>
+              <div class="race-card-sub">Active track telemetry</div>
+            </div>
+          </div>
+
+          <div class="races-section-divider">PAST REPLAYS</div>
+
+          <!-- 2. PAST CLASSIC RACES (Dynamically rendered or templated) -->
+          <div id="past-races-list"></div>
+        </div>
+      </section>
+
+      <!-- ==============================================
            VIEW 1: COCKPIT HUD (SINGLE DRIVER)
            ============================================== -->
-      <section id="view-hud" class="view active">
+      <section id="view-hud" class="view">
         <!-- Header Bar -->
         <header class="hud-header">
           <div class="driver-tag" id="hud-driver-header">
@@ -27,7 +53,10 @@
           <div class="hud-metrics">
             <span id="driver-pos" class="pos-badge">P1</span>
             <span id="driver-gap" class="gap-text">LEADER</span>
-            <button id="btn-mode-hud" class="mode-toggle-btn" title="Tap to toggle Live / Sim">SIM</button>
+            <button id="btn-race-hud" class="race-track-badge" title="Tap to change race">
+              <span id="hud-track-flag">🇬🇧</span>
+              <span id="hud-track-name">SILVERSTONE</span>
+            </button>
           </div>
         </header>
 
@@ -47,8 +76,15 @@
           <div class="led led-blue" data-idx="11"></div>
         </div>
 
-        <!-- Center Instrument: Gear, Speed & DRS -->
+        <!-- Center Instrument: Gear, Speed, DRS & Circuit Watermark -->
         <div class="hud-center">
+          <!-- Subtle Circuit Watermark Outline behind gauges -->
+          <div class="track-watermark-container">
+            <svg id="track-watermark-svg" viewBox="0 0 100 100" class="track-watermark">
+              <path id="track-watermark-path" d="" fill="none" stroke="#FE5000" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </div>
+
           <div class="gear-cluster">
             <span class="cluster-label">GEAR</span>
             <div id="gear-val" class="gear-val">7</div>
@@ -102,13 +138,15 @@
           </div>
           <div class="split-meta">
             <span id="split-delta-badge" class="split-delta-badge">Δ +4.47s</span>
-            <button id="btn-mode-split" class="mode-toggle-btn" title="Tap to toggle Live / Sim">SIM</button>
+            <button id="btn-race-split" class="race-track-badge">
+              <span id="split-track-name">SILVERSTONE</span>
+            </button>
           </div>
         </header>
 
         <!-- Two Columns for the 2 Teammates -->
         <div class="split-columns-container">
-          <!-- Teammate 1 (e.g. NOR) -->
+          <!-- Teammate 1 -->
           <div class="split-col" id="split-col-1">
             <div class="split-driver-header">
               <span id="s1-code" class="split-driver-code">NOR</span>
@@ -136,7 +174,7 @@
           <!-- Divider -->
           <div class="split-divider"></div>
 
-          <!-- Teammate 2 (e.g. PIA) -->
+          <!-- Teammate 2 -->
           <div class="split-col" id="split-col-2">
             <div class="split-driver-header">
               <span id="s2-code" class="split-driver-code">PIA</span>
@@ -164,7 +202,7 @@
       </section>
 
       <!-- ==============================================
-           VIEW 3: TIMING TOWER / DRIVER SELECTION
+           VIEW 3: TIMING TOWER / LEADERBOARD
            ============================================== -->
       <section id="view-tower" class="view">
         <header class="tower-header">
@@ -172,23 +210,44 @@
             <span class="tower-title">STANDINGS</span>
             <span id="tower-session" class="tower-lap">L 42/52</span>
           </div>
-          <button id="btn-mode-tower" class="mode-toggle-btn" title="Tap to toggle Live / Sim">SIM</button>
+          <button id="btn-race-tower" class="race-track-badge">
+            <span id="tower-track-name">SILVERSTONE</span>
+          </button>
         </header>
         <div class="tower-list-container">
           <ul id="leaderboard-list" class="leaderboard-list">
-            <!-- Dynamically populated, rows are tappable to select driver -->
+            <!-- Dynamically populated -->
           </ul>
         </div>
       </section>
 
-      <!-- Persistent Bottom Tab Bar (Quick view switcher) -->
+      <!-- ==============================================
+           VIEW 4: NO LIVE DATA STATE (When Live has no session)
+           ============================================== -->
+      <section id="view-no-live" class="view">
+        <div class="no-live-container">
+          <div class="no-live-radar">
+            <div class="no-live-ping"></div>
+            <span class="no-live-icon">📡</span>
+          </div>
+          <h2 class="no-live-title">NO LIVE RACE DATA</h2>
+          <p class="no-live-desc">No active session is currently running on track for the 2024 season.</p>
+          <div class="no-live-actions">
+            <button id="btn-browse-past-races" class="btn-action-primary">SELECT PAST RACE</button>
+            <button id="btn-retry-live" class="btn-action-secondary">RETRY FEED</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Persistent Bottom Tab Bar -->
       <nav class="bottom-nav-bar">
-        <button id="nav-btn-hud" class="nav-tab active">HUD</button>
+        <button id="nav-btn-races" class="nav-tab active">RACES</button>
+        <button id="nav-btn-hud" class="nav-tab">HUD</button>
         <button id="nav-btn-split" class="nav-tab">SPLIT</button>
         <button id="nav-btn-tower" class="nav-tab">TOWER</button>
       </nav>
 
-      <!-- Toast Feedback for Driver Changes & Mode Switch -->
+      <!-- Toast Feedback -->
       <div id="toast" class="toast">NOR 4</div>
 
       <!-- Connection Error Banner -->
@@ -197,6 +256,7 @@
   </div>
 
   <script src="js/hardware.js"></script>
+  <script src="js/tracks.js"></script>
   <script src="js/simulator.js"></script>
   <script src="js/openf1.js"></script>
   <script src="js/app.js"></script>
