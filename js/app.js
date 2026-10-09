@@ -195,7 +195,10 @@
         }
       }
     } catch (err) {
-      console.warn('[RF1] Live session check error:', err);
+    // Check if OpenF1 returned a detailed explanation (e.g. key required during live track session)
+    if (window.OpenF1 && window.OpenF1.lastStatus && window.OpenF1.lastStatus.detail) {
+      const descEl = document.getElementById('no-live-desc-text');
+      if (descEl) descEl.textContent = window.OpenF1.lastStatus.detail;
     }
 
     // No live session found -> Show NO LIVE DATA state
@@ -538,6 +541,17 @@
     // 5. No Live Data Action Buttons
     btnBrowsePast.addEventListener('click', () => switchView('races'));
     btnRetryLive.addEventListener('click', () => selectLiveRace());
+    const btnEnterKey = document.getElementById('btn-enter-key');
+    if (btnEnterKey) {
+      btnEnterKey.addEventListener('click', () => {
+        const key = prompt('Enter OpenF1 API Key for live unblocked streaming:');
+        if (key && key.trim()) {
+          if (window.OpenF1) window.OpenF1.setApiKey(key.trim());
+          showToast('API KEY SAVED');
+          selectLiveRace();
+        }
+      });
+    }
 
     // 6. Teammate Split Columns: tap either teammate to focus them on HUD
     splitCol1.addEventListener('click', () => {

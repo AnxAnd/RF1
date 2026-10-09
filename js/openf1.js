@@ -1,20 +1,61 @@
 // RF1 — OpenF1 API Client for Live Grand Prix Sessions
+// Supports real-time session discovery, dynamic year lookup, and optional API key authentication
+
 (function(root) {
   'use strict';
 
   class OpenF1Client {
     constructor() {
       this.baseUrl = 'https://api.openf1.org/v1';
+      this.apiKey = null;
+      this.lastStatus = null;
       this.cache = {
         session: { data: null, expiresAt: 0 },
         drivers: { data: null, expiresAt: 0 },
         carData: new Map()
       };
+      this.initKey();
+    }
+
+    initKey() {
+      // Check localStorage or URL query param for optional API key
+      try {
+        if (typeof window !== 'undefined') {
+          const urlKey = new URLSearchParams(window.location.search).get('key');
+          if (urlKey) {
+            this.apiKey = urlKey;
+            localStorage.setItem('openf1_key', urlKey);
+          } else {
+            this.apiKey = localStorage.getItem('openf1_key') || null;
+          }
+        }
+      } catch (e) {}
+    }
+
+    setApiKey(key) {
+      this.apiKey = key;
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('openf1_key', key);
+      }
     }
 
     async fetchJson(endpoint) {
-      const res = await fetch(`${this.baseUrl}${endpoint}`);
+      const headers = { 'User-Agent': 'RF1-Companion/1.0' };
+      if (this.apiKey) {
+        headers['Authorization'] = `Bearer ${this.apiKey}`;
+      }
+
+      const res = await fetch(`${this.baseUrl}${endpoint}`, { headers });
+      
       if (!res.ok) {
+        if (res.status === 401) {
+          const body = await res.json().catch(() => ({}));
+          this.lastStatus = {
+            code: 401,
+            detail: body.detail || 'Live session in progress. API key required during active track hours.'
+          };
+          throw new Error(this.lastStatus.detail);
+        }
         throw new Error(`OpenF1 HTTP ${res.status}`);
       }
       return await res.json();
@@ -25,20 +66,34 @@
       if (this.cache.session.data && this.cache.session.expiresAt > now) {
         return this.cache.session.data;
       }
+
       try {
-        const sessions = await this.fetchJson('/sessions?session_name=Race&year=2024');
+        // First try session_key=latest (automatically returns current 2026/active session)
+        const sessions = await this.fetchJson('/sessions?session_key=latest');
         if (sessions && sessions.length > 0) {
           const latest = sessions[sessions.length - 1];
-          this.cache.session = { data: latest, expiresAt: now + 300000 };
+          this.cache.session = { data: latest, expiresAt: now + 60000 };
           return latest;
         }
       } catch (err) {
-        console.warn('[OpenF1] Session fetch failed:', err.message);
+        console.warn('[OpenF1] Query session_key=latest failed:', err.message);
+        // Fallback: Query by current year
+        try {
+          const currentYear = new Date().getFullYear();
+          const yrSessions = await this.fetchJson(`/sessions?year=${currentYear}`);
+          if (yrSessions && yrSessions.length > 0) {
+            const latest = yrSessions[yrSessions.length - 1];
+            this.cache.session = { data: latest, expiresAt: now + 60000 };
+            return latest;
+          }
+        } catch (e) {
+          console.warn('[OpenF1] Fallback query failed:', e.message);
+        }
       }
       return null;
     }
 
-    async getTelemetry(driverNumber, sessionKey = 9662) {
+    async getTelemetry(driverNumber, sessionKey = 'latest') {
       const num = parseInt(driverNumber, 10);
       const now = Date.now();
       const cached = this.cache.carData.get(num);
@@ -63,7 +118,7 @@
             pos: 1,
             gap: 'LIVE',
             lap: 45,
-            totalLaps: 52,
+            totalLaps: 62,
             speed: Math.round(latest.speed || 0),
             gear: latest.n_gear === 0 ? 'N' : latest.n_gear,
             rpm: rpm,
@@ -83,7 +138,6 @@
         console.warn(`[OpenF1] Live query failed for #${num}:`, err.message);
       }
 
-      // Fallback to simulator
       if (root.F1Simulator) {
         return root.F1Simulator.getDriverTelemetry(num);
       }

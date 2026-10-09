@@ -4,6 +4,20 @@
 
   const TRACKS = [
     {
+      id: 'singapore',
+      name: 'Marina Bay Street Circuit',
+      gp: 'SINGAPORE GP',
+      flag: '🇸🇬',
+      country: 'SGP',
+      year: '2026',
+      laps: 62,
+      length: '4.940 km',
+      topSpeed: 310,
+      lapTimeSec: 91,
+      // Marina Bay night street circuit: Sheares, Turn 7, Anderson Bridge, Padang, Bay grandstand straight
+      svgPath: 'M 24,82 C 16,72 15,52 20,36 C 26,22 42,16 62,15 C 80,14 88,24 86,42 C 84,60 76,74 60,82 C 46,86 32,86 24,82 Z'
+    },
+    {
       id: 'silverstone',
       name: 'Silverstone Circuit',
       gp: 'BRITISH GP',
