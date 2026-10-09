@@ -1,0 +1,7 @@
+{
+  "title": "RF1",
+  "url": "https://anxand.github.io/RF1/",
+  "description": "Formula 1 pit-wall telemetry companion and live dashboard for Rabbit R1",
+  "iconUrl": "https://raw.githubusercontent.com/rabbit-hmi-oss/creations-sdk/main/plugin-demo/favicon.ico",
+  "themeColor": "#FE5000"
+}

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>RF1 — Rabbit R1 F1 Telemetry Companion</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="r1-screen-wrapper">
+    <!-- Viewport locked strictly to 240 x 282 CSS pixels -->
+    <main id="app" class="r1-viewport" tabindex="0">
+      
+      <!-- VIEW 1: COCKPIT HUD -->
+      <section id="view-hud" class="view active">
+        <!-- Header Bar -->
+        <header class="hud-header">
+          <div class="driver-tag">
+            <span id="team-stripe" class="team-stripe"></span>
+            <span id="driver-code" class="code">NOR</span>
+            <span id="driver-num" class="num">4</span>
+          </div>
+          <div class="hud-metrics">
+            <span id="driver-pos" class="pos-badge">P1</span>
+            <span id="driver-gap" class="gap-text">LEADER</span>
+          </div>
+        </header>
+
+        <!-- F1 Steering Wheel Shift Lights (12 LEDs) -->
+        <div class="shift-lights-container">
+          <div class="led led-green" data-idx="0"></div>
+          <div class="led led-green" data-idx="1"></div>
+          <div class="led led-green" data-idx="2"></div>
+          <div class="led led-green" data-idx="3"></div>
+          <div class="led led-red" data-idx="4"></div>
+          <div class="led led-red" data-idx="5"></div>
+          <div class="led led-red" data-idx="6"></div>
+          <div class="led led-red" data-idx="7"></div>
+          <div class="led led-blue" data-idx="8"></div>
+          <div class="led led-blue" data-idx="9"></div>
+          <div class="led led-blue" data-idx="10"></div>
+          <div class="led led-blue" data-idx="11"></div>
+        </div>
+
+        <!-- Center Instrument: Gear, Speed & DRS -->
+        <div class="hud-center">
+          <div class="gear-cluster">
+            <span class="cluster-label">GEAR</span>
+            <div id="gear-val" class="gear-val">7</div>
+          </div>
+          <div class="speed-cluster">
+            <div id="speed-val" class="speed-val">314</div>
+            <span class="speed-unit">KM/H</span>
+          </div>
+          <div id="drs-pill" class="drs-pill">DRS</div>
+        </div>
+
+        <!-- Bottom Meters: Throttle, Brake & Tire status -->
+        <footer class="hud-footer">
+          <div class="pedal-cluster">
+            <div class="pedal-bar-col">
+              <span class="pedal-label">BRK</span>
+              <div class="pedal-track">
+                <div id="brake-fill" class="pedal-fill brake-fill" style="height: 0%;"></div>
+              </div>
+              <span id="brake-pct" class="pedal-pct">0%</span>
+            </div>
+            <div class="pedal-bar-col">
+              <span class="pedal-label">THR</span>
+              <div class="pedal-track">
+                <div id="throttle-fill" class="pedal-fill throttle-fill" style="height: 100%;"></div>
+              </div>
+              <span id="throttle-pct" class="pedal-pct">100%</span>
+            </div>
+          </div>
+
+          <div class="status-col">
+            <div class="tire-row">
+              <span id="tire-compound" class="compound-badge compound-h">H</span>
+              <span id="tire-age" class="tire-age-text">22 LAPS</span>
+            </div>
+            <div class="lap-row">
+              <span id="lap-counter" class="lap-text">L 42 / 52</span>
+            </div>
+            <div class="mode-pill" id="mode-badge">SIM</div>
+          </div>
+        </footer>
+      </section>
+
+      <!-- VIEW 2: TIMING TOWER / LEADERBOARD -->
+      <section id="view-tower" class="view">
+        <header class="tower-header">
+          <span class="tower-title">LEADERBOARD</span>
+          <span id="tower-session" class="tower-lap">L 42/52</span>
+        </header>
+        <div class="tower-list-container">
+          <ul id="leaderboard-list" class="leaderboard-list">
+            <!-- Dynamically populated -->
+          </ul>
+        </div>
+      </section>
+
+      <!-- Toast Feedback for Driver Changes & Mode Switch -->
+      <div id="toast" class="toast">NOR 4</div>
+
+      <!-- Connection Error Banner -->
+      <div id="connection-error" class="connection-error hidden">RECONNECTING...</div>
+    </main>
+  </div>
+
+  <script src="js/simulator.js"></script>
+  <script src="js/openf1.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

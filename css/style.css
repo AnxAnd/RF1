@@ -1,0 +1,484 @@
+/* RF1 — High-Contrast F1 Cockpit Theme for Rabbit R1 (240x282px) */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background-color: #080808;
+  color: #FFFFFF;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+/* Device Wrapper (Simulates r1 chassis on desktop, full bleed on r1) */
+.r1-screen-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Viewport locked strictly to 240 x 282 CSS pixels */
+.r1-viewport {
+  width: 240px;
+  height: 282px;
+  background-color: #000000;
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.8), 0 0 0 1px #222222;
+  outline: none;
+}
+
+/* View Switching */
+.view {
+  display: none;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+}
+
+.view.active {
+  display: flex;
+}
+
+/* ----------------------------------------------------
+   VIEW 1: COCKPIT HUD
+   ---------------------------------------------------- */
+
+/* Header */
+.hud-header {
+  height: 34px;
+  background: #0d0d0d;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px;
+  border-bottom: 1px solid #1a1a1a;
+}
+
+.driver-tag {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.team-stripe {
+  width: 4px;
+  height: 16px;
+  background-color: #FF8000;
+  border-radius: 2px;
+}
+
+.driver-tag .code {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.driver-tag .num {
+  font-size: 11px;
+  font-weight: 600;
+  color: #888888;
+}
+
+.hud-metrics {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pos-badge {
+  background: #E8002D;
+  color: #FFFFFF;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+.gap-text {
+  font-size: 11px;
+  font-weight: 600;
+  color: #BBBBBB;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Shift Lights (12 LEDs) */
+.shift-lights-container {
+  height: 16px;
+  background: #050505;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px;
+  gap: 3px;
+  border-bottom: 1px solid #111111;
+}
+
+.led {
+  flex: 1;
+  height: 8px;
+  border-radius: 2px;
+  background: #181818;
+  transition: background 0.05s ease, box-shadow 0.05s ease;
+}
+
+.led.led-green.active {
+  background: #00E676;
+  box-shadow: 0 0 6px #00E676;
+}
+
+.led.led-red.active {
+  background: #FF1744;
+  box-shadow: 0 0 6px #FF1744;
+}
+
+.led.led-blue.active {
+  background: #2979FF;
+  box-shadow: 0 0 6px #2979FF;
+}
+
+.led.flash-purple {
+  animation: ledFlash 0.15s infinite alternate;
+}
+
+@keyframes ledFlash {
+  from { background: #D500F9; box-shadow: 0 0 8px #D500F9; }
+  to { background: #222222; box-shadow: none; }
+}
+
+/* Central Gauge Area */
+.hud-center {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 4px 6px;
+  position: relative;
+}
+
+.gear-cluster {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.cluster-label {
+  font-size: 9px;
+  font-weight: 700;
+  color: #666666;
+  letter-spacing: 1px;
+}
+
+.gear-val {
+  font-size: 68px;
+  font-weight: 900;
+  line-height: 1;
+  color: #FFFFFF;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+.speed-cluster {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.speed-val {
+  font-size: 44px;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: #F0F0F0;
+}
+
+.speed-unit {
+  font-size: 9px;
+  font-weight: 700;
+  color: #777777;
+  letter-spacing: 1px;
+  margin-top: 2px;
+}
+
+.drs-pill {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  font-size: 9px;
+  font-weight: 900;
+  padding: 2px 5px;
+  border-radius: 2px;
+  background: #1c1c1e;
+  color: #444444;
+  letter-spacing: 0.5px;
+  transition: all 0.1s ease;
+}
+
+.drs-pill.active {
+  background: #00F5D4;
+  color: #000000;
+  box-shadow: 0 0 10px #00F5D4;
+}
+
+/* Bottom Meters */
+.hud-footer {
+  height: 72px;
+  background: #080808;
+  border-top: 1px solid #141414;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 10px;
+}
+
+.pedal-cluster {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.pedal-bar-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 22px;
+}
+
+.pedal-label {
+  font-size: 8px;
+  font-weight: 800;
+  color: #777777;
+  margin-bottom: 2px;
+}
+
+.pedal-track {
+  width: 12px;
+  height: 38px;
+  background: #181818;
+  border-radius: 2px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: hidden;
+  border: 1px solid #282828;
+}
+
+.pedal-fill {
+  width: 100%;
+  border-radius: 1px;
+  transition: height 0.08s linear;
+}
+
+.brake-fill {
+  background: #FF1744;
+  box-shadow: 0 0 8px rgba(255, 23, 68, 0.6);
+}
+
+.throttle-fill {
+  background: #00E676;
+  box-shadow: 0 0 8px rgba(0, 230, 118, 0.6);
+}
+
+.pedal-pct {
+  font-size: 8px;
+  font-weight: 700;
+  color: #888888;
+  margin-top: 2px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Status Column */
+.status-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.tire-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.compound-badge {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  font-size: 9px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid;
+}
+
+.compound-s { border-color: #FF1744; color: #FF1744; } /* Soft: Red */
+.compound-m { border-color: #FFD600; color: #FFD600; } /* Medium: Yellow */
+.compound-h { border-color: #FFFFFF; color: #FFFFFF; } /* Hard: White */
+.compound-i { border-color: #00E676; color: #00E676; } /* Inter: Green */
+.compound-w { border-color: #2979FF; color: #2979FF; } /* Wet: Blue */
+
+.tire-age-text {
+  font-size: 10px;
+  font-weight: 600;
+  color: #CCCCCC;
+}
+
+.lap-row {
+  font-size: 10px;
+  font-weight: 700;
+  color: #888888;
+}
+
+.mode-pill {
+  font-size: 8px;
+  font-weight: 800;
+  padding: 1px 4px;
+  border-radius: 2px;
+  background: #222222;
+  color: #AAAAAA;
+}
+
+/* ----------------------------------------------------
+   VIEW 2: TIMING TOWER / LEADERBOARD
+   ---------------------------------------------------- */
+.tower-header {
+  height: 32px;
+  background: #0d0d0d;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+  border-bottom: 1px solid #1a1a1a;
+}
+
+.tower-title {
+  font-size: 11px;
+  font-weight: 800;
+  color: #E8002D;
+  letter-spacing: 0.5px;
+}
+
+.tower-lap {
+  font-size: 10px;
+  font-weight: 600;
+  color: #888888;
+}
+
+.tower-list-container {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.tower-list-container::-webkit-scrollbar {
+  width: 2px;
+}
+.tower-list-container::-webkit-scrollbar-thumb {
+  background: #333333;
+}
+
+.leaderboard-list {
+  list-style: none;
+}
+
+.tower-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 8px;
+  border-bottom: 1px solid #111111;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.tower-row.selected {
+  background: #1a1a1a;
+  border-left: 3px solid #FF8000;
+}
+
+.tower-driver-info {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.tower-pos {
+  width: 18px;
+  font-weight: 800;
+  color: #888888;
+}
+
+.tower-color-pill {
+  width: 3px;
+  height: 12px;
+  border-radius: 1px;
+}
+
+.tower-code {
+  font-weight: 800;
+}
+
+.tower-timing {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+.tower-gap {
+  font-size: 10px;
+  color: #AAAAAA;
+}
+
+/* Toast Message */
+.toast {
+  position: absolute;
+  top: 42px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(20, 20, 20, 0.95);
+  border: 1px solid #444444;
+  color: #FFFFFF;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 800;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 100;
+}
+
+.toast.show {
+  opacity: 1;
+}
+
+/* Connection Error Banner */
+.connection-error {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #FF1744;
+  color: #FFFFFF;
+  font-size: 9px;
+  font-weight: 800;
+  text-align: center;
+  padding: 3px 0;
+  z-index: 101;
+}
+
+.connection-error.hidden {
+  display: none;
+}

@@ -1,0 +1,21 @@
+{
+  "name": "rf1",
+  "version": "1.0.0",
+  "description": "Formula 1 pit-wall telemetry companion and live dashboard for Rabbit R1",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "node --watch server/server.js",
+    "preview": "./launch-preview.sh"
+  },
+  "keywords": [
+    "f1",
+    "telemetry",
+    "rabbit-r1",
+    "creations",
+    "openf1",
+    "formula-1"
+  ],
+  "author": "AnxAnd",
+  "license": "MIT"
+}
