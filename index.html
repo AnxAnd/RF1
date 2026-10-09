@@ -127,10 +127,13 @@
           <div class="status-col">
             <div class="tire-row">
               <span id="tire-compound" class="compound-badge compound-h">H</span>
-              <span id="tire-age" class="tire-age-text">22 LAPS</span>
+              <span id="tire-age" class="tire-age-text">1 LAP</span>
             </div>
             <div class="lap-row">
-              <span id="lap-counter" class="lap-text">L 42 / 62</span>
+              <button id="btn-restart-lap" class="lap-row-btn" title="Tap to restart race from Lap 1">
+                <span id="lap-counter" class="lap-text">L 1 / 62</span>
+                <span class="lap-restart-icon">↺</span>
+              </button>
             </div>
           </div>
         </footer>
@@ -217,7 +220,10 @@
         <header class="tower-header">
           <div class="tower-title-group">
             <span class="tower-title">STANDINGS</span>
-            <span id="tower-session" class="tower-lap">L 42/62</span>
+            <button id="btn-restart-tower" class="tower-lap-btn" title="Tap to restart race from Lap 1">
+              <span id="tower-session" class="tower-lap">L 1/62</span>
+              <span class="lap-restart-icon">↺</span>
+            </button>
           </div>
           <button id="btn-race-tower" class="race-track-badge">
             <span id="tower-track-name">SINGAPORE</span>
@@ -231,7 +237,7 @@
       </section>
 
       <!-- ==============================================
-           VIEW 4: NO LIVE DATA STATE
+           VIEW 4: TRACK INACTIVE / NO LIVE STATE
            ============================================== -->
       <section id="view-no-live" class="view">
         <div class="no-live-container">
@@ -239,12 +245,12 @@
             <div class="no-live-ping"></div>
             <span class="no-live-icon">📡</span>
           </div>
-          <h2 class="no-live-title">LIVE RACE STATUS</h2>
-          <p id="no-live-desc-text" class="no-live-desc">No live session is currently broadcast, or an OpenF1 API key is required during live track sessions.</p>
+          <h2 id="no-live-title-el" class="no-live-title">TRACK CURRENTLY INACTIVE</h2>
+          <p id="no-live-desc-text" class="no-live-desc">No live session is broadcasting right now. Next track session is scheduled for 13:30 BST. Live timing will activate once cars take to the track.</p>
           <div class="no-live-actions">
-            <button id="btn-enter-key" class="btn-action-primary">🔑 ENTER OPENF1 KEY</button>
-            <button id="btn-browse-past-races" class="btn-action-secondary">SELECT REPLAY RACE</button>
-            <button id="btn-retry-live" class="btn-action-secondary">RETRY LIVE FEED</button>
+            <button id="btn-start-replay-lap1" class="btn-action-primary">▶ START REPLAY FROM LAP 1</button>
+            <button id="btn-browse-past-races" class="btn-action-secondary">SELECT REPLAY CIRCUIT</button>
+            <button id="btn-retry-live" class="btn-action-secondary">🔄 RECHECK LIVE TRACK</button>
           </div>
         </div>
       </section>

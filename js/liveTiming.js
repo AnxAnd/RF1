@@ -143,6 +143,51 @@
       });
       return Array.from(teamMap.values()).filter(t => t.drivers.length >= 2);
     }
+
+    isSessionLive(sessionData) {
+      if (!sessionData) return false;
+      const sess = sessionData.Session || sessionData;
+      const status = (sess.SessionStatus || '').toLowerCase();
+      const archive = (sess.ArchiveStatus && sess.ArchiveStatus.Status ? sess.ArchiveStatus.Status : '').toLowerCase();
+
+      // If status is finalized or completed, cars are not running live
+      if (status === 'finalised' || status === 'finished' || status === 'ended' || archive === 'complete') {
+        return false;
+      }
+
+      // If status is started or active, session is live on track
+      if (status === 'started' || status === 'active' || status === 'running' || status === 'green') {
+        return true;
+      }
+
+      return false;
+    }
+
+    getSessionSummary(sessionData) {
+      if (!sessionData) return { isLive: false, label: 'Track Inactive', desc: 'No live broadcast' };
+      const sess = sessionData.Session || sessionData;
+      const status = sess.SessionStatus || 'Inactive';
+      const name = sess.Name || 'Session';
+      const meeting = sess.Meeting ? (sess.Meeting.Name || 'Singapore GP') : 'Grand Prix';
+      const isLive = this.isSessionLive(sessionData);
+
+      let desc = '';
+      if (isLive) {
+        desc = `🟢 Track Green Flag • ${name} Live`;
+      } else if (status.toLowerCase() === 'finalised') {
+        desc = `${name} Finalised • Next Session 13:30 BST`;
+      } else {
+        desc = `${name} Scheduled • Starts 13:30 BST`;
+      }
+
+      return {
+        isLive,
+        status,
+        name,
+        meeting,
+        desc
+      };
+    }
   }
 
   root.F1LiveTiming = new LiveTimingClient();

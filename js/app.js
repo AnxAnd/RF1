@@ -104,6 +104,9 @@
   const liveKeyIndicator = document.getElementById('live-key-indicator');
   const liveCardSub = document.getElementById('live-card-sub');
   const seasonPills = document.querySelectorAll('.season-pill');
+  const btnRestartLap = document.getElementById('btn-restart-lap');
+  const btnRestartTower = document.getElementById('btn-restart-tower');
+  const btnStartReplayLap1 = document.getElementById('btn-start-replay-lap1');
 
   // Notifications
   const toastEl = document.getElementById('toast');
@@ -164,14 +167,44 @@
     });
   }
 
-  function updateKeyIndicators() {
-    const liveClient = window.F1LiveTiming;
-    if (liveKeyIndicator) {
-      liveKeyIndicator.textContent = 'ONLINE';
-      liveKeyIndicator.classList.add('has-key');
+  function restartRace() {
+    if (window.F1Simulator) {
+      window.F1Simulator.restart();
     }
-    if (liveCardSub) {
-      liveCardSub.textContent = '2026 Singapore GP • Live Timing Feed';
+    refreshActiveView();
+    showToast('↺ RESTARTED FROM LAP 1');
+  }
+
+  async function updateKeyIndicators() {
+    const liveClient = window.F1LiveTiming;
+    if (!liveClient) return;
+
+    try {
+      const leaderboard = await liveClient.getLeaderboard();
+      const isLive = liveClient.isSessionLive(leaderboard);
+      const summary = liveClient.getSessionSummary(leaderboard);
+
+      if (liveKeyIndicator) {
+        if (isLive) {
+          liveKeyIndicator.textContent = 'LIVE NOW';
+          liveKeyIndicator.className = 'live-key-tag live-active';
+        } else {
+          liveKeyIndicator.textContent = 'STANDBY';
+          liveKeyIndicator.className = 'live-key-tag standby';
+        }
+      }
+
+      if (liveCardSub) {
+        liveCardSub.textContent = summary.desc;
+      }
+    } catch (err) {
+      if (liveKeyIndicator) {
+        liveKeyIndicator.textContent = 'STANDBY';
+        liveKeyIndicator.className = 'live-key-tag standby';
+      }
+      if (liveCardSub) {
+        liveCardSub.textContent = 'Track Inactive • Session Starts 13:30 BST';
+      }
     }
   }
 
@@ -217,43 +250,55 @@
 
   // Handle Live Race Selection
   async function selectLiveRace() {
-    showToast('CONNECTING LIVE TIMING...');
+    showToast('CHECKING TRACK STATUS...');
     try {
       if (window.F1LiveTiming) {
         const rawData = await window.F1LiveTiming.getLeaderboard();
-        const liveDrivers = window.F1LiveTiming.parseLeaderboard(rawData);
-        if (liveDrivers && liveDrivers.length > 0) {
-          activeMode = 'LIVE';
-          drivers = liveDrivers;
-          const extractedTeams = window.F1LiveTiming.extractTeams(liveDrivers);
-          if (extractedTeams.length > 0) teams = extractedTeams;
-          currentDriverIndex = 0;
-          currentTeamIndex = 0;
+        const isLive = window.F1LiveTiming.isSessionLive(rawData);
 
-          // Determine circuit layout & names
-          const session = rawData.Session;
-          let trackName = 'SINGAPORE GP';
-          let trackFlag = '🇸🇬';
-          if (session && session.Meeting) {
-            const mName = session.Meeting.Name || 'Singapore Grand Prix';
-            trackName = mName.toUpperCase();
-            if (session.Meeting.Country && session.Meeting.Country.Code === 'SGP') {
-              trackFlag = '🇸🇬';
-              if (window.TrackManager) {
-                const t = window.TrackManager.getTrackById('singapore');
-                if (t) trackWatermarkPath.setAttribute('d', t.svgPath);
+        if (isLive) {
+          const liveDrivers = window.F1LiveTiming.parseLeaderboard(rawData);
+          if (liveDrivers && liveDrivers.length > 0) {
+            activeMode = 'LIVE';
+            drivers = liveDrivers;
+            const extractedTeams = window.F1LiveTiming.extractTeams(liveDrivers);
+            if (extractedTeams.length > 0) teams = extractedTeams;
+            currentDriverIndex = 0;
+            currentTeamIndex = 0;
+
+            const session = rawData.Session;
+            let trackName = 'SINGAPORE GP';
+            let trackFlag = '🇸🇬';
+            if (session && session.Meeting) {
+              const mName = session.Meeting.Name || 'Singapore Grand Prix';
+              trackName = mName.toUpperCase();
+              if (session.Meeting.Country && session.Meeting.Country.Code === 'SGP') {
+                trackFlag = '🇸🇬';
+                if (window.TrackManager) {
+                  const t = window.TrackManager.getTrackById('singapore');
+                  if (t) trackWatermarkPath.setAttribute('d', t.svgPath);
+                }
               }
             }
+
+            hudTrackFlag.textContent = trackFlag;
+            hudTrackName.textContent = trackName.replace(' GRAND PRIX', '').replace(' GP', '');
+            splitTrackName.textContent = trackName;
+            towerTrackName.textContent = trackName;
+
+            updateHUDDriverHeader();
+            showToast(`🔴 LIVE: ${trackName}`);
+            switchView('hud');
+            return;
           }
-
-          hudTrackFlag.textContent = trackFlag;
-          hudTrackName.textContent = trackName.replace(' GRAND PRIX', '').replace(' GP', '');
-          splitTrackName.textContent = trackName;
-          towerTrackName.textContent = trackName;
-
-          updateHUDDriverHeader();
-          showToast(`🔴 LIVE: ${trackName}`);
-          switchView('hud');
+        } else {
+          // Track is not actively running cars right now
+          const summary = window.F1LiveTiming.getSessionSummary(rawData);
+          const titleEl = document.getElementById('no-live-title-el');
+          const descEl = document.getElementById('no-live-desc-text');
+          if (titleEl) titleEl.textContent = 'TRACK CURRENTLY INACTIVE';
+          if (descEl) descEl.textContent = `${summary.name} is finalised. Next track session is scheduled for 13:30 BST. Live timing stream will activate automatically when cars take to the track.`;
+          switchView('noLive');
           return;
         }
       }
@@ -278,11 +323,8 @@
       console.warn('[RF1] Live session check error:', err);
     }
 
-    // Check if OpenF1 returned a detailed explanation (e.g. key required during live track session)
-    if (window.OpenF1 && window.OpenF1.lastStatus && window.OpenF1.lastStatus.detail) {
-      const descEl = document.getElementById('no-live-desc-text');
-      if (descEl) descEl.textContent = window.OpenF1.lastStatus.detail;
-    }
+    const descEl = document.getElementById('no-live-desc-text');
+    if (descEl) descEl.textContent = 'No active session is currently running on track. Next session is scheduled for 13:30 BST.';
 
     // No live session found -> Show NO LIVE DATA state
     switchView('noLive');
@@ -424,8 +466,9 @@
 
     tireCompoundEl.textContent = data.tire || 'M';
     tireCompoundEl.className = `compound-badge compound-${(data.tire || 'm').toLowerCase()}`;
-    tireAgeEl.textContent = `${data.tireAge || 12} LAPS`;
-    lapCounterEl.textContent = `L ${data.lap || 38}/${data.totalLaps || 52}`;
+    const tireAgeVal = data.tireAge !== undefined ? data.tireAge : 1;
+    tireAgeEl.textContent = `${tireAgeVal} ${tireAgeVal === 1 ? 'LAP' : 'LAPS'}`;
+    lapCounterEl.textContent = `L ${data.lap || 1}/${data.totalLaps || 62}`;
   }
 
   // Render Teammate Split
@@ -718,6 +761,26 @@
       btnEnterKey.addEventListener('click', () => {
         promptForApiKey();
         selectLiveRace();
+      });
+    }
+    if (btnStartReplayLap1) {
+      btnStartReplayLap1.addEventListener('click', () => {
+        selectTrack(currentTrackId || 'singapore');
+        restartRace();
+      });
+    }
+
+    // 8. Restart from Lap 1 Buttons
+    if (btnRestartLap) {
+      btnRestartLap.addEventListener('click', (e) => {
+        e.stopPropagation();
+        restartRace();
+      });
+    }
+    if (btnRestartTower) {
+      btnRestartTower.addEventListener('click', (e) => {
+        e.stopPropagation();
+        restartRace();
       });
     }
 

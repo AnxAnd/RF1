@@ -109,18 +109,30 @@
       });
     });
   });
+  // Sort ALL_DRIVERS strictly by basePos so index 0 is P1, index 1 is P2, etc.
+  ALL_DRIVERS.sort((a, b) => a.basePos - b.basePos);
 
   class SimulatorEngine {
     constructor() {
       this.startTime = Date.now();
-      this.currentTrackId = 'silverstone';
-      this.currentTrackName = 'Silverstone Circuit';
-      this.currentGrandPrix = 'BRITISH GP';
-      this.currentFlag = '🇬🇧';
-      this.totalLaps = 52;
+      this.currentTrackId = 'singapore';
+      this.currentTrackName = 'Marina Bay Street Circuit';
+      this.currentGrandPrix = 'SINGAPORE GP';
+      this.currentFlag = '🇸🇬';
+      this.totalLaps = 62;
       this.lapDurationMs = 85000;
-      this.currentLap = 38;
-      this.topSpeedRef = 338;
+      this.currentLap = 1; // Always start at Lap 1 from the beginning!
+      this.topSpeedRef = 310;
+    }
+
+    restart() {
+      this.currentLap = 1;
+      this.startTime = Date.now();
+    }
+
+    setLap(lapNumber) {
+      this.currentLap = Math.max(1, Math.min(this.totalLaps, parseInt(lapNumber, 10) || 1));
+      this.startTime = Date.now();
     }
 
     setTrack(trackId) {
@@ -135,7 +147,7 @@
           this.totalLaps = t.laps;
           this.lapDurationMs = (t.lapTimeSec || 85) * 1000;
           this.topSpeedRef = t.topSpeed || 330;
-          this.currentLap = Math.floor(t.laps * 0.7); // Start 70% into the race
+          this.currentLap = 1; // Start cleanly from Lap 1!
           this.startTime = Date.now();
         }
       }
@@ -175,12 +187,14 @@
 
     computeTelemetry(driver, globalIndex) {
       const now = Date.now();
-      const driverOffsetMs = (globalIndex * 4200);
-      const elapsed = (now - this.startTime + driverOffsetMs);
-      const cycleProgress = (elapsed % this.lapDurationMs) / this.lapDurationMs;
+      const driverOffsetMs = (globalIndex * 1500);
+      const elapsed = Math.max(0, now - this.startTime);
+      const driverElapsed = elapsed + driverOffsetMs;
+      const cycleProgress = (driverElapsed % this.lapDurationMs) / this.lapDurationMs;
 
-      const currentCompletedLaps = this.currentLap + Math.floor(elapsed / this.lapDurationMs);
-      const tireAge = driver.baseTireAge + Math.floor((currentCompletedLaps - 38) / 2);
+      const lapsPassed = Math.floor(elapsed / this.lapDurationMs);
+      const currentCompletedLaps = Math.min(this.totalLaps, this.currentLap + lapsPassed);
+      const tireAge = Math.max(1, currentCompletedLaps);
 
       let speed = 0;
       let gear = 1;
@@ -256,8 +270,10 @@
       const rpmPct = Math.min(100, Math.max(0, Math.round(((rpm - 4000) / 9000) * 100)));
 
       let gap = 'LEADER';
-      if (globalIndex > 0) {
-        const gapSec = (globalIndex * 1.34 + Math.sin(now / 15000 + globalIndex) * 0.4).toFixed(3);
+      if (driver.basePos > 1) {
+        const baseGap = (driver.basePos - 1) * 1.45;
+        const lapSpread = Math.min(25, (currentCompletedLaps - 1) * 0.35);
+        const gapSec = (baseGap + lapSpread + Math.sin(now / 15000 + driver.basePos) * 0.2).toFixed(3);
         gap = `+${gapSec}s`;
       }
 
@@ -268,7 +284,7 @@
         team: driver.teamName || driver.team,
         teamShort: driver.teamShort || driver.team,
         teamColor: driver.teamColor || driver.color,
-        pos: driver.basePos || (globalIndex + 1),
+        pos: driver.basePos,
         gap: gap,
         lap: currentCompletedLaps,
         totalLaps: this.totalLaps,
@@ -292,7 +308,7 @@
     getDriverTelemetry(driverNumber) {
       const num = parseInt(driverNumber, 10) || 4;
       const driver = ALL_DRIVERS.find(d => d.number === num) || ALL_DRIVERS[0];
-      const globalIdx = ALL_DRIVERS.indexOf(driver);
+      const globalIdx = driver.basePos - 1;
       return this.computeTelemetry(driver, globalIdx);
     }
 
@@ -302,9 +318,9 @@
       const d1 = ALL_DRIVERS.find(d => d.number === team.drivers[0].number);
       const d2 = ALL_DRIVERS.find(d => d.number === team.drivers[1].number);
 
-      const t1 = this.computeTelemetry(d1, ALL_DRIVERS.indexOf(d1));
-      const t2 = this.computeTelemetry(d2, ALL_DRIVERS.indexOf(d2));
-      const deltaSec = Math.abs(t1.pos - t2.pos) * 1.45 + (Math.sin(Date.now() / 12000) * 0.3);
+      const t1 = this.computeTelemetry(d1, d1.basePos - 1);
+      const t2 = this.computeTelemetry(d2, d2.basePos - 1);
+      const deltaSec = Math.abs(t1.pos - t2.pos) * 1.45 + (Math.sin(Date.now() / 12000) * 0.2);
 
       return {
         teamName: team.name,
@@ -323,21 +339,26 @@
 
     getLeaderboard() {
       const now = Date.now();
-      return ALL_DRIVERS.map((d, idx) => {
+      const lapsPassed = Math.floor(Math.max(0, now - this.startTime) / this.lapDurationMs);
+      const currentCompletedLaps = Math.min(this.totalLaps, this.currentLap + lapsPassed);
+
+      return ALL_DRIVERS.map((d) => {
         let gap = 'LEADER';
-        if (idx > 0) {
-          const gapSec = (idx * 1.34 + Math.sin(now / 15000 + idx) * 0.4).toFixed(3);
+        if (d.basePos > 1) {
+          const baseGap = (d.basePos - 1) * 1.45;
+          const lapSpread = Math.min(25, (currentCompletedLaps - 1) * 0.35);
+          const gapSec = (baseGap + lapSpread + Math.sin(now / 15000 + d.basePos) * 0.2).toFixed(3);
           gap = `+${gapSec}s`;
         }
         return {
-          pos: idx + 1,
+          pos: d.basePos,
           code: d.code,
           number: d.number,
           team: d.teamName,
           teamColor: d.teamColor,
           gap: gap,
           tire: d.compound,
-          tireAge: d.baseTireAge + Math.floor((this.currentLap - 38) / 2)
+          tireAge: Math.max(1, currentCompletedLaps)
         };
       });
     }

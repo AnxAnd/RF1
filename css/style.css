@@ -175,6 +175,20 @@ body {
   box-shadow: 0 0 6px rgba(0, 230, 118, 0.5);
 }
 
+.live-key-tag.standby {
+  background: #2b1f06;
+  color: #FFB300;
+  border: 1px solid #553b0a;
+  box-shadow: none;
+}
+
+.live-key-tag.live-active {
+  background: #00E676;
+  color: #000000;
+  box-shadow: 0 0 8px rgba(0, 230, 118, 0.6);
+  animation: pulseLive 1.2s infinite alternate;
+}
+
 .races-list-container {
   flex: 1;
   overflow-y: auto;
@@ -585,6 +599,36 @@ body {
   font-size: 9px;
   font-weight: 700;
   color: #888888;
+}
+
+.lap-row-btn, .tower-lap-btn {
+  background: transparent;
+  border: none;
+  color: #888888;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-family: inherit;
+  transition: all 0.1s ease;
+}
+
+.lap-row-btn:active, .tower-lap-btn:active {
+  color: #FE5000;
+}
+
+.lap-restart-icon {
+  font-size: 8px;
+  opacity: 0.6;
+  transition: transform 0.15s ease;
+}
+
+.lap-row-btn:active .lap-restart-icon,
+.tower-lap-btn:active .lap-restart-icon {
+  transform: rotate(-90deg);
+  opacity: 1;
+  color: #FE5000;
 }
 
 /* ----------------------------------------------------
