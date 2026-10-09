@@ -36,27 +36,56 @@ body {
   border-radius: 4px;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.8), 0 0 0 1px #222222;
   outline: none;
+  display: flex;
+  flex-direction: column;
 }
 
 /* View Switching */
 .view {
   display: none;
   width: 100%;
-  height: 100%;
+  height: 258px; /* 282px - 24px bottom nav */
   flex-direction: column;
+  overflow: hidden;
 }
 
 .view.active {
   display: flex;
 }
 
+/* Mode Toggle Button (Tappable Pill in Header) */
+.mode-toggle-btn {
+  background: #1c1c1e;
+  border: 1px solid #333333;
+  color: #FFB300;
+  font-size: 8px;
+  font-weight: 900;
+  padding: 2px 5px;
+  border-radius: 3px;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: all 0.1s ease;
+}
+
+.mode-toggle-btn:active {
+  background: #FE5000;
+  color: #FFFFFF;
+  border-color: #FE5000;
+}
+
+.mode-toggle-btn.live {
+  background: #E8002D;
+  color: #FFFFFF;
+  border-color: #E8002D;
+  box-shadow: 0 0 6px rgba(232, 0, 45, 0.6);
+}
+
 /* ----------------------------------------------------
    VIEW 1: COCKPIT HUD
    ---------------------------------------------------- */
 
-/* Header */
 .hud-header {
-  height: 34px;
+  height: 32px;
   background: #0d0d0d;
   display: flex;
   align-items: center;
@@ -69,6 +98,7 @@ body {
   display: flex;
   align-items: center;
   gap: 5px;
+  cursor: pointer;
 }
 
 .team-stripe {
@@ -93,20 +123,20 @@ body {
 .hud-metrics {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
 }
 
 .pos-badge {
   background: #E8002D;
   color: #FFFFFF;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 900;
-  padding: 1px 5px;
+  padding: 1px 4px;
   border-radius: 3px;
 }
 
 .gap-text {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   color: #BBBBBB;
   font-variant-numeric: tabular-nums;
@@ -114,7 +144,7 @@ body {
 
 /* Shift Lights (12 LEDs) */
 .shift-lights-container {
-  height: 16px;
+  height: 14px;
   background: #050505;
   display: flex;
   align-items: center;
@@ -126,7 +156,7 @@ body {
 
 .led {
   flex: 1;
-  height: 8px;
+  height: 7px;
   border-radius: 2px;
   background: #181818;
   transition: background 0.05s ease, box-shadow 0.05s ease;
@@ -162,7 +192,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-around;
-  padding: 4px 6px;
+  padding: 2px 6px;
   position: relative;
 }
 
@@ -173,14 +203,14 @@ body {
 }
 
 .cluster-label {
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 700;
   color: #666666;
   letter-spacing: 1px;
 }
 
 .gear-val {
-  font-size: 68px;
+  font-size: 64px;
   font-weight: 900;
   line-height: 1;
   color: #FFFFFF;
@@ -194,7 +224,7 @@ body {
 }
 
 .speed-val {
-  font-size: 44px;
+  font-size: 42px;
   font-weight: 800;
   line-height: 1;
   font-variant-numeric: tabular-nums;
@@ -202,20 +232,20 @@ body {
 }
 
 .speed-unit {
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 700;
   color: #777777;
   letter-spacing: 1px;
-  margin-top: 2px;
+  margin-top: 1px;
 }
 
 .drs-pill {
   position: absolute;
-  top: 6px;
-  right: 8px;
-  font-size: 9px;
+  top: 4px;
+  right: 6px;
+  font-size: 8px;
   font-weight: 900;
-  padding: 2px 5px;
+  padding: 1px 4px;
   border-radius: 2px;
   background: #1c1c1e;
   color: #444444;
@@ -231,18 +261,18 @@ body {
 
 /* Bottom Meters */
 .hud-footer {
-  height: 72px;
+  height: 64px;
   background: #080808;
   border-top: 1px solid #141414;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 4px 10px;
+  padding: 3px 10px;
 }
 
 .pedal-cluster {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   align-items: center;
 }
 
@@ -250,19 +280,19 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 22px;
+  width: 20px;
 }
 
 .pedal-label {
-  font-size: 8px;
+  font-size: 7px;
   font-weight: 800;
   color: #777777;
-  margin-bottom: 2px;
+  margin-bottom: 1px;
 }
 
 .pedal-track {
-  width: 12px;
-  height: 38px;
+  width: 11px;
+  height: 36px;
   background: #181818;
   border-radius: 2px;
   display: flex;
@@ -289,10 +319,10 @@ body {
 }
 
 .pedal-pct {
-  font-size: 8px;
+  font-size: 7px;
   font-weight: 700;
   color: #888888;
-  margin-top: 2px;
+  margin-top: 1px;
   font-variant-numeric: tabular-nums;
 }
 
@@ -301,20 +331,20 @@ body {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 4px;
+  gap: 3px;
 }
 
 .tire-row {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
 }
 
 .compound-badge {
-  width: 15px;
-  height: 15px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 900;
   display: flex;
   align-items: center;
@@ -322,35 +352,190 @@ body {
   border: 1.5px solid;
 }
 
-.compound-s { border-color: #FF1744; color: #FF1744; } /* Soft: Red */
-.compound-m { border-color: #FFD600; color: #FFD600; } /* Medium: Yellow */
-.compound-h { border-color: #FFFFFF; color: #FFFFFF; } /* Hard: White */
-.compound-i { border-color: #00E676; color: #00E676; } /* Inter: Green */
-.compound-w { border-color: #2979FF; color: #2979FF; } /* Wet: Blue */
+.compound-s { border-color: #FF1744; color: #FF1744; }
+.compound-m { border-color: #FFD600; color: #FFD600; }
+.compound-h { border-color: #FFFFFF; color: #FFFFFF; }
+.compound-i { border-color: #00E676; color: #00E676; }
+.compound-w { border-color: #2979FF; color: #2979FF; }
 
 .tire-age-text {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 600;
   color: #CCCCCC;
 }
 
 .lap-row {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
   color: #888888;
 }
 
-.mode-pill {
-  font-size: 8px;
+/* ----------------------------------------------------
+   VIEW 2: TEAMMATE SPLIT (DUAL DRIVER)
+   ---------------------------------------------------- */
+.split-header {
+  height: 32px;
+  background: #0d0d0d;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px;
+  border-bottom: 1px solid #1a1a1a;
+}
+
+.split-team-tag {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.split-team-title {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.split-meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.split-delta-badge {
+  background: #1c1c1e;
+  border: 1px solid #333333;
+  color: #00F5D4;
+  font-size: 9px;
   font-weight: 800;
   padding: 1px 4px;
   border-radius: 2px;
-  background: #222222;
+  font-variant-numeric: tabular-nums;
+}
+
+.split-columns-container {
+  flex: 1;
+  display: flex;
+  padding: 4px;
+  gap: 4px;
+}
+
+.split-col {
+  flex: 1;
+  background: #090909;
+  border: 1px solid #1a1a1a;
+  border-radius: 3px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px 6px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.1s ease;
+}
+
+.split-col:active {
+  background: #141414;
+}
+
+.split-divider {
+  width: 1px;
+  background: #1c1c1e;
+}
+
+.split-driver-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2px;
+}
+
+.split-driver-code {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.split-metric-row {
+  width: 100%;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 1px 0;
+}
+
+.split-metric-label {
+  font-size: 7px;
+  font-weight: 700;
+  color: #666666;
+}
+
+.split-gear-val {
+  font-size: 26px;
+  font-weight: 900;
+  line-height: 1;
+  color: #FFFFFF;
+}
+
+.split-speed-val {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+  color: #F0F0F0;
+  font-variant-numeric: tabular-nums;
+}
+
+.split-drs-badge {
+  font-size: 7px;
+  font-weight: 900;
+  padding: 1px 4px;
+  border-radius: 2px;
+  background: #151515;
+  color: #444444;
+  margin: 2px 0;
+}
+
+.split-drs-badge.active {
+  background: #00F5D4;
+  color: #000000;
+  box-shadow: 0 0 6px #00F5D4;
+}
+
+.split-pedals-row {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 3px 0;
+}
+
+.split-pedal-track {
+  width: 8px;
+  height: 28px;
+  background: #151515;
+  border-radius: 1px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: hidden;
+  border: 1px solid #222222;
+}
+
+.split-tire-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.split-tire-age {
+  font-size: 8px;
+  font-weight: 700;
   color: #AAAAAA;
 }
 
 /* ----------------------------------------------------
-   VIEW 2: TIMING TOWER / LEADERBOARD
+   VIEW 3: TIMING TOWER / LEADERBOARD
    ---------------------------------------------------- */
 .tower-header {
   height: 32px;
@@ -358,19 +543,25 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 10px;
+  padding: 0 8px;
   border-bottom: 1px solid #1a1a1a;
 }
 
+.tower-title-group {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
 .tower-title {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 800;
   color: #E8002D;
   letter-spacing: 0.5px;
 }
 
 .tower-lap {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 600;
   color: #888888;
 }
@@ -398,13 +589,19 @@ body {
   justify-content: space-between;
   padding: 5px 8px;
   border-bottom: 1px solid #111111;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
+  cursor: pointer;
+  transition: background 0.1s ease;
+}
+
+.tower-row:active {
+  background: #2a2a2a;
 }
 
 .tower-row.selected {
-  background: #1a1a1a;
-  border-left: 3px solid #FF8000;
+  background: #181818;
+  border-left: 3px solid #FE5000;
 }
 
 .tower-driver-info {
@@ -414,14 +611,14 @@ body {
 }
 
 .tower-pos {
-  width: 18px;
+  width: 16px;
   font-weight: 800;
   color: #888888;
 }
 
 .tower-color-pill {
   width: 3px;
-  height: 12px;
+  height: 11px;
   border-radius: 1px;
 }
 
@@ -432,27 +629,65 @@ body {
 .tower-timing {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   font-variant-numeric: tabular-nums;
 }
 
 .tower-gap {
-  font-size: 10px;
+  font-size: 9px;
   color: #AAAAAA;
+}
+
+/* ----------------------------------------------------
+   PERSISTENT BOTTOM TAB BAR
+   ---------------------------------------------------- */
+.bottom-nav-bar {
+  height: 24px;
+  background: #080808;
+  border-top: 1px solid #1a1a1a;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 4px;
+}
+
+.nav-tab {
+  flex: 1;
+  height: 18px;
+  background: transparent;
+  border: none;
+  color: #666666;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.nav-tab:active {
+  background: #181818;
+  color: #FFFFFF;
+}
+
+.nav-tab.active {
+  background: #1c1c1e;
+  color: #FE5000;
+  box-shadow: 0 0 0 1px #333333;
 }
 
 /* Toast Message */
 .toast {
   position: absolute;
-  top: 42px;
+  top: 38px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(20, 20, 20, 0.95);
-  border: 1px solid #444444;
+  background: rgba(25, 25, 25, 0.95);
+  border: 1px solid #FE5000;
   color: #FFFFFF;
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-size: 9px;
   font-weight: 800;
   pointer-events: none;
   opacity: 0;
@@ -467,15 +702,15 @@ body {
 /* Connection Error Banner */
 .connection-error {
   position: absolute;
-  bottom: 0;
+  bottom: 24px;
   left: 0;
   right: 0;
   background: #FF1744;
   color: #FFFFFF;
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 800;
   text-align: center;
-  padding: 3px 0;
+  padding: 2px 0;
   z-index: 101;
 }
 

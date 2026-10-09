@@ -13,11 +13,13 @@
     <!-- Viewport locked strictly to 240 x 282 CSS pixels -->
     <main id="app" class="r1-viewport" tabindex="0">
       
-      <!-- VIEW 1: COCKPIT HUD -->
+      <!-- ==============================================
+           VIEW 1: COCKPIT HUD (SINGLE DRIVER)
+           ============================================== -->
       <section id="view-hud" class="view active">
         <!-- Header Bar -->
         <header class="hud-header">
-          <div class="driver-tag">
+          <div class="driver-tag" id="hud-driver-header">
             <span id="team-stripe" class="team-stripe"></span>
             <span id="driver-code" class="code">NOR</span>
             <span id="driver-num" class="num">4</span>
@@ -25,6 +27,7 @@
           <div class="hud-metrics">
             <span id="driver-pos" class="pos-badge">P1</span>
             <span id="driver-gap" class="gap-text">LEADER</span>
+            <button id="btn-mode-hud" class="mode-toggle-btn" title="Tap to toggle Live / Sim">SIM</button>
           </div>
         </header>
 
@@ -84,23 +87,106 @@
             <div class="lap-row">
               <span id="lap-counter" class="lap-text">L 42 / 52</span>
             </div>
-            <div class="mode-pill" id="mode-badge">SIM</div>
           </div>
         </footer>
       </section>
 
-      <!-- VIEW 2: TIMING TOWER / LEADERBOARD -->
+      <!-- ==============================================
+           VIEW 2: TEAMMATE SPLIT (DUAL DRIVER)
+           ============================================== -->
+      <section id="view-split" class="view">
+        <header class="split-header">
+          <div class="split-team-tag">
+            <span id="split-team-stripe" class="team-stripe"></span>
+            <span id="split-team-name" class="split-team-title">MCLAREN</span>
+          </div>
+          <div class="split-meta">
+            <span id="split-delta-badge" class="split-delta-badge">Δ +4.47s</span>
+            <button id="btn-mode-split" class="mode-toggle-btn" title="Tap to toggle Live / Sim">SIM</button>
+          </div>
+        </header>
+
+        <!-- Two Columns for the 2 Teammates -->
+        <div class="split-columns-container">
+          <!-- Teammate 1 (e.g. NOR) -->
+          <div class="split-col" id="split-col-1">
+            <div class="split-driver-header">
+              <span id="s1-code" class="split-driver-code">NOR</span>
+              <span id="s1-pos" class="pos-badge">P1</span>
+            </div>
+            <div class="split-metric-row">
+              <span class="split-metric-label">GEAR</span>
+              <span id="s1-gear" class="split-gear-val">7</span>
+            </div>
+            <div class="split-metric-row">
+              <span class="split-metric-label">SPD</span>
+              <span id="s1-speed" class="split-speed-val">314</span>
+            </div>
+            <div id="s1-drs" class="split-drs-badge">DRS</div>
+            <div class="split-pedals-row">
+              <div class="split-pedal-track"><div id="s1-brk-bar" class="pedal-fill brake-fill" style="height: 0%;"></div></div>
+              <div class="split-pedal-track"><div id="s1-thr-bar" class="pedal-fill throttle-fill" style="height: 100%;"></div></div>
+            </div>
+            <div class="split-tire-row">
+              <span id="s1-compound" class="compound-badge compound-h">H</span>
+              <span id="s1-tire-age" class="split-tire-age">22L</span>
+            </div>
+          </div>
+
+          <!-- Divider -->
+          <div class="split-divider"></div>
+
+          <!-- Teammate 2 (e.g. PIA) -->
+          <div class="split-col" id="split-col-2">
+            <div class="split-driver-header">
+              <span id="s2-code" class="split-driver-code">PIA</span>
+              <span id="s2-pos" class="pos-badge">P4</span>
+            </div>
+            <div class="split-metric-row">
+              <span class="split-metric-label">GEAR</span>
+              <span id="s2-gear" class="split-gear-val">7</span>
+            </div>
+            <div class="split-metric-row">
+              <span class="split-metric-label">SPD</span>
+              <span id="s2-speed" class="split-speed-val">310</span>
+            </div>
+            <div id="s2-drs" class="split-drs-badge">DRS</div>
+            <div class="split-pedals-row">
+              <div class="split-pedal-track"><div id="s2-brk-bar" class="pedal-fill brake-fill" style="height: 0%;"></div></div>
+              <div class="split-pedal-track"><div id="s2-thr-bar" class="pedal-fill throttle-fill" style="height: 90%;"></div></div>
+            </div>
+            <div class="split-tire-row">
+              <span id="s2-compound" class="compound-badge compound-m">M</span>
+              <span id="s2-tire-age" class="split-tire-age">11L</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==============================================
+           VIEW 3: TIMING TOWER / DRIVER SELECTION
+           ============================================== -->
       <section id="view-tower" class="view">
         <header class="tower-header">
-          <span class="tower-title">LEADERBOARD</span>
-          <span id="tower-session" class="tower-lap">L 42/52</span>
+          <div class="tower-title-group">
+            <span class="tower-title">STANDINGS</span>
+            <span id="tower-session" class="tower-lap">L 42/52</span>
+          </div>
+          <button id="btn-mode-tower" class="mode-toggle-btn" title="Tap to toggle Live / Sim">SIM</button>
         </header>
         <div class="tower-list-container">
           <ul id="leaderboard-list" class="leaderboard-list">
-            <!-- Dynamically populated -->
+            <!-- Dynamically populated, rows are tappable to select driver -->
           </ul>
         </div>
       </section>
+
+      <!-- Persistent Bottom Tab Bar (Quick view switcher) -->
+      <nav class="bottom-nav-bar">
+        <button id="nav-btn-hud" class="nav-tab active">HUD</button>
+        <button id="nav-btn-split" class="nav-tab">SPLIT</button>
+        <button id="nav-btn-tower" class="nav-tab">TOWER</button>
+      </nav>
 
       <!-- Toast Feedback for Driver Changes & Mode Switch -->
       <div id="toast" class="toast">NOR 4</div>
@@ -110,6 +196,7 @@
     </main>
   </div>
 
+  <script src="js/hardware.js"></script>
   <script src="js/simulator.js"></script>
   <script src="js/openf1.js"></script>
   <script src="js/app.js"></script>
