@@ -151,6 +151,8 @@
       this.sessionType = 'Race';
       this.sessionName = 'Grand Prix';
       this.sessionPart = 'RACE';
+      this.flagTimeline = null;
+      this.customFlag = null;
 
       this.initTrackGrid('singapore');
     }
@@ -189,8 +191,106 @@
       this.activeDrivers = driversList.sort((a, b) => a.basePos - b.basePos);
     }
 
+    buildFlagTimeline(rcData) {
+      if (!rcData || !rcData.RaceControl || !Array.isArray(rcData.RaceControl)) {
+        if (!this.isRace) {
+          const durationSec = (this.sessionPart === 'SQ3' || this.sessionPart === 'Q3') ? 480 : 600;
+          return [
+            { offsetSec: 0, state: { type: 'GREEN', title: 'GREEN FLAG', msg: 'TRACK CLEAR', isCaution: false } },
+            { offsetSec: durationSec, state: { type: 'CHEQUERED', title: 'CHEQUERED FLAG', msg: 'SESSION FINISHED', isCaution: false } }
+          ];
+        }
+        return null;
+      }
+
+      const rcList = rcData.RaceControl;
+      const stages = [];
+      let cur = null;
+      rcList.forEach(item => {
+        const flag = (item.Flag || '').toUpperCase();
+        const scope = (item.Scope || '').toUpperCase();
+        const utc = new Date(item.Utc + 'Z').getTime();
+        if (scope === 'TRACK' && flag === 'GREEN') {
+          cur = { startTime: utc, endTime: null, events: [] };
+          stages.push(cur);
+        }
+        if (cur) {
+          cur.events.push(item);
+          if (scope === 'TRACK' && flag === 'CHEQUERED') {
+            cur.endTime = utc;
+          }
+        }
+      });
+
+      // Default to the last active stage (e.g. SQ3 in Sprint Qualifying)
+      const stage = stages.length > 0 ? stages[stages.length - 1] : null;
+      if (!stage) {
+        return [
+          { offsetSec: 0, state: { type: 'GREEN', title: 'GREEN FLAG', msg: 'TRACK CLEAR', isCaution: false } }
+        ];
+      }
+
+      const stageStart = stage.startTime;
+      const timeline = [];
+      timeline.push({
+        offsetSec: 0,
+        state: { type: 'GREEN', title: 'GREEN FLAG', msg: 'TRACK CLEAR', isCaution: false }
+      });
+
+      const activeSectorFlags = {};
+      stage.events.forEach(item => {
+        const utc = new Date(item.Utc + 'Z').getTime();
+        const offsetSec = Math.max(0, Math.round((utc - stageStart) / 1000));
+        const flag = (item.Flag || '').toUpperCase();
+        const scope = (item.Scope || '').toUpperCase();
+        const sector = item.Sector;
+        const msg = (item.Message || '').toUpperCase();
+
+        let state = null;
+        if (scope === 'TRACK') {
+          if (flag === 'CHEQUERED') {
+            state = { type: 'CHEQUERED', title: 'CHEQUERED FLAG', msg: 'SESSION FINISHED', isCaution: false };
+          } else if (flag === 'RED') {
+            state = { type: 'RED', title: 'RED FLAG', msg: item.Message || 'SESSION SUSPENDED', isCaution: true };
+          } else if (msg.includes('SAFETY CAR') || msg.includes('VSC')) {
+            state = {
+              type: msg.includes('VSC') ? 'VSC' : 'SC',
+              title: msg.includes('VSC') ? 'VSC' : 'SAFETY CAR',
+              msg: item.Message || 'CAUTION',
+              isCaution: true
+            };
+          }
+        } else if (scope === 'SECTOR' && sector !== undefined) {
+          if (flag === 'CLEAR') {
+            delete activeSectorFlags[sector];
+          } else if (flag.includes('YELLOW')) {
+            activeSectorFlags[sector] = flag;
+          }
+          const activeSectors = Object.keys(activeSectorFlags).map(Number).sort((a, b) => a - b);
+          if (activeSectors.length > 0) {
+            const isDouble = Object.values(activeSectorFlags).some(f => f.includes('DOUBLE'));
+            state = {
+              type: isDouble ? 'DOUBLE_YELLOW' : 'YELLOW',
+              title: isDouble ? 'DOUBLE YELLOW' : 'YELLOW FLAG',
+              msg: `SECTOR ${activeSectors.join(', ')}`,
+              sectors: activeSectors,
+              isCaution: true
+            };
+          } else {
+            state = { type: 'GREEN', title: 'GREEN FLAG', msg: 'TRACK CLEAR', isCaution: false };
+          }
+        }
+
+        if (state) {
+          timeline.push({ offsetSec, state });
+        }
+      });
+
+      return timeline;
+    }
+
     // Ingest real completed live session data from live timing feed
-    loadSessionFromLive(rawData) {
+    loadSessionFromLive(rawData, rcData) {
       if (!rawData || !rawData.Lines) return false;
       const lines = rawData.Lines;
       const order = rawData.Leaderboard || Object.keys(lines);
@@ -322,12 +422,15 @@
         }
       }
       this.isLiveReplay = true;
+      this.customFlag = null;
+      this.flagTimeline = this.buildFlagTimeline(rcData);
       return true;
     }
 
     restart() {
       this.currentLap = 1;
       this.startTime = Date.now();
+      this.customFlag = null;
     }
 
     setLap(lapNumber) {
@@ -338,6 +441,8 @@
     setTrack(trackId) {
       this.currentTrackId = trackId;
       this.isLiveReplay = false;
+      this.flagTimeline = null;
+      this.customFlag = null;
       const tm = (typeof window !== 'undefined' && window.TrackManager) ? window.TrackManager : null;
       if (tm) {
         const t = tm.getTrackById(trackId);
@@ -626,17 +731,35 @@
 
     getFlagState() {
       if (this.customFlag) return this.customFlag;
-      const elapsedSec = Math.floor((Date.now() - this.startTime) / 1000);
-      const cycle = elapsedSec % 160;
-      if (cycle >= 50 && cycle <= 65) {
+
+      // Real timeline flag state during session replay
+      if (this.isLiveReplay && this.flagTimeline && this.flagTimeline.length > 0) {
+        const elapsedSec = Math.floor((Date.now() - this.startTime) / 1000);
+        let active = this.flagTimeline[0];
+        for (let i = 0; i < this.flagTimeline.length; i++) {
+          if (elapsedSec >= this.flagTimeline[i].offsetSec) {
+            active = this.flagTimeline[i];
+          } else {
+            break;
+          }
+        }
+        return active.state;
+      }
+
+      // Check if simulated race is finished
+      const now = Date.now();
+      const elapsed = Math.max(0, now - this.startTime);
+      const lapsPassed = Math.floor(elapsed / this.lapDurationMs);
+      const currentCompletedLaps = Math.min(this.totalLaps, this.currentLap + lapsPassed);
+      if (currentCompletedLaps >= this.totalLaps && this.isRace) {
         return {
-          type: 'YELLOW',
-          title: 'YELLOW FLAG',
-          msg: 'SECTOR 2 CAUTION',
-          sectors: [2],
-          isCaution: true
+          type: 'CHEQUERED',
+          title: 'CHEQUERED FLAG',
+          msg: 'SESSION FINISHED',
+          isCaution: false
         };
       }
+
       return {
         type: 'GREEN',
         title: 'GREEN FLAG',

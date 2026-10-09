@@ -676,12 +676,18 @@ body {
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.5px;
+  max-width: 65px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .split-meta {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
+  min-width: 0;
+  flex-shrink: 1;
 }
 
 .split-delta-badge {
@@ -938,9 +944,10 @@ body {
 }
 
 .tower-session-ticker-badge,
-.hud-session-ticker-badge {
+.hud-session-ticker-badge,
+.split-session-ticker-badge {
   max-width: 105px;
-  min-width: 70px;
+  min-width: 65px;
   height: 20px;
   overflow: hidden;
   padding: 0 4px;
@@ -954,14 +961,20 @@ body {
   flex-shrink: 1;
 }
 
+.split-session-ticker-badge {
+  max-width: 92px;
+}
+
 .tower-session-ticker-badge:active,
-.hud-session-ticker-badge:active {
+.hud-session-ticker-badge:active,
+.split-session-ticker-badge:active {
   background: #FE5000;
   border-color: #FE5000;
 }
 
 .tower-ticker-viewport,
-.hud-ticker-viewport {
+.hud-ticker-viewport,
+.split-ticker-viewport {
   width: 100%;
   overflow: hidden;
   white-space: nowrap;
@@ -972,7 +985,8 @@ body {
 }
 
 .tower-ticker-track,
-.hud-ticker-track {
+.hud-ticker-track,
+.split-ticker-track {
   display: inline-flex;
   white-space: nowrap;
   animation: tower-marquee 12s linear infinite;
@@ -982,7 +996,9 @@ body {
 .tower-session-ticker-badge:hover .tower-ticker-track,
 .tower-session-ticker-badge:active .tower-ticker-track,
 .hud-session-ticker-badge:hover .hud-ticker-track,
-.hud-session-ticker-badge:active .hud-ticker-track {
+.hud-session-ticker-badge:active .hud-ticker-track,
+.split-session-ticker-badge:hover .split-ticker-track,
+.split-session-ticker-badge:active .split-ticker-track {
   animation-play-state: paused;
 }
 
@@ -996,7 +1012,8 @@ body {
 }
 
 .tower-ticker-text,
-.hud-ticker-text {
+.hud-ticker-text,
+.split-ticker-text {
   font-size: 8px;
   font-weight: 800;
   color: #DDDDDD;
@@ -1005,12 +1022,14 @@ body {
 }
 
 .tower-session-ticker-badge:active .tower-ticker-text,
-.hud-session-ticker-badge:active .hud-ticker-text {
+.hud-session-ticker-badge:active .hud-ticker-text,
+.split-session-ticker-badge:active .split-ticker-text {
   color: #FFFFFF;
 }
 
 .tower-ticker-spacer,
-.hud-ticker-spacer {
+.hud-ticker-spacer,
+.split-ticker-spacer {
   font-size: 7px;
   color: #FE5000;
   padding: 0 3px;
