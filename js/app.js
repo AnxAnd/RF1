@@ -15,6 +15,7 @@
   let currentSeasonFilter = 'ALL';
   let pollTimer = null;
   let isFetching = false;
+  let lastFinalisedLiveRawData = null;
 
   // Views & Tabs
   const views = {
@@ -233,7 +234,13 @@
       }
 
       if (liveCardSub) {
-        liveCardSub.textContent = summary.desc;
+        if (isLive) {
+          liveCardSub.textContent = `🟢 Track Active • ${leaderboard.Session?.Name || 'Live'}`;
+        } else {
+          lastFinalisedLiveRawData = leaderboard;
+          const sName = leaderboard.Session?.Name || 'Session';
+          liveCardSub.textContent = `🏁 ${sName} Finalised • Tap to Replay`;
+        }
       }
     } catch (err) {
       if (liveKeyIndicator) {
@@ -259,12 +266,60 @@
     }
   }
 
+  // Replay the session that just concluded on the live timing feed
+  async function replayCompletedLiveSession() {
+    showToast('LOADING RECENT SESSION...');
+    try {
+      let rawData = lastFinalisedLiveRawData;
+      if (!rawData && window.F1LiveTiming) {
+        rawData = await window.F1LiveTiming.getLeaderboard();
+      }
+      if (rawData && rawData.Lines && window.F1Simulator) {
+        const ok = window.F1Simulator.loadSessionFromLive(rawData);
+        if (ok) {
+          activeMode = 'REPLAY';
+          drivers = window.F1Simulator.getDrivers();
+          teams = window.F1Simulator.getTeams();
+          currentDriverIndex = 0;
+          currentTeamIndex = 0;
+          currentTrackId = 'singapore';
+
+          const track = window.TrackManager ? window.TrackManager.getTrackById('singapore') : null;
+          if (track) {
+            trackWatermarkPath.setAttribute('d', track.svgPath);
+          }
+          hudTrackFlag.textContent = '🇸🇬';
+          const gpName = (rawData.Session?.Meeting?.Name || 'SINGAPORE GP').toUpperCase();
+          hudTrackName.textContent = 'SINGAPORE GP';
+          splitTrackName.textContent = gpName;
+          towerTrackName.textContent = gpName;
+
+          updateHUDDriverHeader();
+          restartRace();
+          switchView('hud');
+          const sName = rawData.Session?.Name ? rawData.Session.Name.toUpperCase() : 'SESSION';
+          showToast(`▶ REPLAYING ${sName} (LAP 1)`);
+          return;
+        }
+      }
+    } catch (err) {
+      console.warn('[RF1] Error loading finalised live session:', err);
+    }
+    selectTrack('singapore');
+    restartRace();
+  }
+
   // Select a Circuit
   function selectTrack(trackId) {
     currentTrackId = trackId;
     activeMode = 'REPLAY';
     if (window.F1Simulator) {
       window.F1Simulator.setTrack(trackId);
+      drivers = window.F1Simulator.getDrivers();
+      teams = window.F1Simulator.getTeams();
+      currentDriverIndex = 0;
+      currentTeamIndex = 0;
+      updateHUDDriverHeader();
     }
 
     const track = window.TrackManager ? window.TrackManager.getTrackById(trackId) : null;
@@ -331,11 +386,15 @@
           }
         } else {
           // Track is not actively running cars right now
+          lastFinalisedLiveRawData = rawData;
           const summary = window.F1LiveTiming.getSessionSummary(rawData);
           const titleEl = document.getElementById('no-live-title-el');
           const descEl = document.getElementById('no-live-desc-text');
-          if (titleEl) titleEl.textContent = 'TRACK CURRENTLY INACTIVE';
-          if (descEl) descEl.textContent = `${summary.name} is finalised. Next track session is scheduled for 13:30 BST. Live timing stream will activate automatically when cars take to the track.`;
+          const btnReplay = document.getElementById('btn-start-replay-lap1');
+          const sessTitle = summary.name ? summary.name.toUpperCase() : 'SESSION';
+          if (titleEl) titleEl.textContent = `${sessTitle} FINALISED`;
+          if (descEl) descEl.textContent = `The ${summary.meeting || 'Singapore GP'} session has completed. Replay this race from Lap 1 with the official standings and sector timings, or select a classic circuit.`;
+          if (btnReplay) btnReplay.textContent = `▶ REPLAY ${sessTitle} (LAP 1)`;
           switchView('noLive');
           return;
         }
@@ -991,8 +1050,7 @@
     }
     if (btnStartReplayLap1) {
       btnStartReplayLap1.addEventListener('click', () => {
-        selectTrack(currentTrackId || 'singapore');
-        restartRace();
+        replayCompletedLiveSession();
       });
     }
 
