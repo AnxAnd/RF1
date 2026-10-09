@@ -126,6 +126,33 @@
           }
         }
 
+        // Extract Best Lap
+        const bestLap = line.BestLapTime && line.BestLapTime.Value ? line.BestLapTime.Value : '';
+
+        // Extract Sectors (S1, S2, S3) with F1 Broadcast Colors
+        const sectors = [];
+        const rawSectors = line.Sectors ? (Array.isArray(line.Sectors) ? line.Sectors : Object.values(line.Sectors)) : [];
+        for (let i = 0; i < 3; i++) {
+          const sec = rawSectors[i] || {};
+          const val = sec.Value || '';
+          let colorClass = 'sector-none';
+          if (val) {
+            if (sec.OverallFastest) {
+              colorClass = 'sector-purple';
+            } else if (sec.PersonalFastest) {
+              colorClass = 'sector-green';
+            } else {
+              colorClass = 'sector-yellow';
+            }
+          }
+          sectors.push({
+            number: i + 1,
+            val: val ? parseFloat(val).toFixed(1) : '--.-',
+            fullVal: val,
+            colorClass: colorClass
+          });
+        }
+
         drivers.push({
           number: num,
           code: line.Tla || (line.BroadcastName ? line.BroadcastName.slice(0, 3) : `D${num}`),
@@ -134,6 +161,8 @@
           color: line.TeamColour ? `#${line.TeamColour}` : '#FE5000',
           pos: pos,
           gap: gap,
+          bestLap: bestLap,
+          sectors: sectors,
           tire: currentCompound,
           tireAge: tyreLaps,
           inPit: Boolean(line.InPit),

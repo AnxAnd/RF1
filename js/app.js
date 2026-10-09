@@ -73,6 +73,17 @@
 
   const s1Code = document.getElementById('s1-code');
   const s1Pos = document.getElementById('s1-pos');
+  const s1BestLap = document.getElementById('s1-best-lap');
+  const s1SecBoxes = [
+    document.getElementById('s1-sec-1'),
+    document.getElementById('s1-sec-2'),
+    document.getElementById('s1-sec-3')
+  ];
+  const s1SecVals = [
+    document.getElementById('s1-s1-val'),
+    document.getElementById('s1-s2-val'),
+    document.getElementById('s1-s3-val')
+  ];
   const s1Gear = document.getElementById('s1-gear');
   const s1Speed = document.getElementById('s1-speed');
   const s1Drs = document.getElementById('s1-drs');
@@ -83,6 +94,17 @@
 
   const s2Code = document.getElementById('s2-code');
   const s2Pos = document.getElementById('s2-pos');
+  const s2BestLap = document.getElementById('s2-best-lap');
+  const s2SecBoxes = [
+    document.getElementById('s2-sec-1'),
+    document.getElementById('s2-sec-2'),
+    document.getElementById('s2-sec-3')
+  ];
+  const s2SecVals = [
+    document.getElementById('s2-s1-val'),
+    document.getElementById('s2-s2-val'),
+    document.getElementById('s2-s3-val')
+  ];
   const s2Gear = document.getElementById('s2-gear');
   const s2Speed = document.getElementById('s2-speed');
   const s2Drs = document.getElementById('s2-drs');
@@ -367,7 +389,7 @@
 
   function getSelectedDriver() {
     if (!drivers || drivers.length === 0) {
-      return { number: 4, code: 'NOR', color: '#FF8000', name: 'Lando Norris', teamIndex: 0 };
+      return { number: 1, code: 'NOR', color: '#FF8000', name: 'Lando Norris', teamIndex: 0 };
     }
     return drivers[currentDriverIndex];
   }
@@ -608,35 +630,60 @@
   function renderSplit(teamData) {
     if (!teamData) return;
 
-    splitTeamName.textContent = teamData.teamShort;
-    splitTeamStripe.style.backgroundColor = teamData.teamColor || '#FF8000';
-    splitDeltaBadge.textContent = `Δ ${teamData.delta}`;
+    if (splitTeamName) splitTeamName.textContent = teamData.teamShort;
+    if (splitTeamStripe) splitTeamStripe.style.backgroundColor = teamData.teamColor || '#FF8000';
+    if (splitDeltaBadge) {
+      const dStr = teamData.delta || '+0.000s';
+      splitDeltaBadge.textContent = dStr.startsWith('Δ') ? dStr : `Δ ${dStr}`;
+    }
 
     // Driver 1
     const d1 = teamData.d1;
-    s1Code.textContent = d1.driver;
-    s1Pos.textContent = `P${d1.pos}`;
-    s1Gear.textContent = d1.gear;
-    s1Speed.textContent = d1.speed;
-    s1Drs.className = `split-drs-badge ${d1.drs === 1 ? 'active' : ''}`;
-    s1BrkBar.style.height = `${d1.brake}%`;
-    s1ThrBar.style.height = `${d1.throttle}%`;
-    s1Compound.textContent = d1.tire;
-    s1Compound.className = `compound-badge compound-${d1.tire.toLowerCase()}`;
-    s1TireAge.textContent = `${d1.tireAge}L`;
+    if (s1Code) s1Code.textContent = d1.driver;
+    if (s1Pos) s1Pos.textContent = `P${d1.pos}`;
+    if (s1BestLap) s1BestLap.textContent = d1.bestLap || '--:--.---';
+    if (d1.sectors && Array.isArray(d1.sectors)) {
+      d1.sectors.forEach((sec, idx) => {
+        if (s1SecBoxes[idx] && s1SecVals[idx]) {
+          s1SecVals[idx].textContent = sec.val || '--.-';
+          s1SecBoxes[idx].className = `split-sector-box ${sec.colorClass || 'sector-none'}`;
+        }
+      });
+    }
+    if (s1Gear) s1Gear.textContent = d1.gear;
+    if (s1Speed) s1Speed.textContent = d1.speed;
+    if (s1Drs) s1Drs.className = `split-drs-badge ${d1.drs === 1 ? 'active' : ''}`;
+    if (s1BrkBar) s1BrkBar.style.height = `${d1.brake}%`;
+    if (s1ThrBar) s1ThrBar.style.height = `${d1.throttle}%`;
+    if (s1Compound) {
+      s1Compound.textContent = d1.tire;
+      s1Compound.className = `compound-badge compound-${(d1.tire || 'm').toLowerCase()}`;
+    }
+    if (s1TireAge) s1TireAge.textContent = `${d1.tireAge}L`;
 
     // Driver 2
     const d2 = teamData.d2;
-    s2Code.textContent = d2.driver;
-    s2Pos.textContent = `P${d2.pos}`;
-    s2Gear.textContent = d2.gear;
-    s2Speed.textContent = d2.speed;
-    s2Drs.className = `split-drs-badge ${d2.drs === 1 ? 'active' : ''}`;
-    s2BrkBar.style.height = `${d2.brake}%`;
-    s2ThrBar.style.height = `${d2.throttle}%`;
-    s2Compound.textContent = d2.tire;
-    s2Compound.className = `compound-badge compound-${d2.tire.toLowerCase()}`;
-    s2TireAge.textContent = `${d2.tireAge}L`;
+    if (s2Code) s2Code.textContent = d2.driver;
+    if (s2Pos) s2Pos.textContent = `P${d2.pos}`;
+    if (s2BestLap) s2BestLap.textContent = d2.bestLap || '--:--.---';
+    if (d2.sectors && Array.isArray(d2.sectors)) {
+      d2.sectors.forEach((sec, idx) => {
+        if (s2SecBoxes[idx] && s2SecVals[idx]) {
+          s2SecVals[idx].textContent = sec.val || '--.-';
+          s2SecBoxes[idx].className = `split-sector-box ${sec.colorClass || 'sector-none'}`;
+        }
+      });
+    }
+    if (s2Gear) s2Gear.textContent = d2.gear;
+    if (s2Speed) s2Speed.textContent = d2.speed;
+    if (s2Drs) s2Drs.className = `split-drs-badge ${d2.drs === 1 ? 'active' : ''}`;
+    if (s2BrkBar) s2BrkBar.style.height = `${d2.brake}%`;
+    if (s2ThrBar) s2ThrBar.style.height = `${d2.throttle}%`;
+    if (s2Compound) {
+      s2Compound.textContent = d2.tire;
+      s2Compound.className = `compound-badge compound-${(d2.tire || 'm').toLowerCase()}`;
+    }
+    if (s2TireAge) s2TireAge.textContent = `${d2.tireAge}L`;
   }
 
   // Render Standings List
@@ -728,34 +775,62 @@
         const d1 = team.drivers[0];
         const d2 = team.drivers[1];
 
+        const liveD1 = drivers.find(d => d.number === d1.number) || d1;
+        const liveD2 = drivers.find(d => d.number === d2.number) || d2;
+
         const sim1 = window.F1Simulator ? window.F1Simulator.getDriverTelemetry(d1.number) : {};
         const sim2 = window.F1Simulator ? window.F1Simulator.getDriverTelemetry(d2.number) : {};
+
+        let deltaStr = `${(Math.abs(liveD2.pos - liveD1.pos) * 0.35 + 0.12).toFixed(2)}s`;
+        const parseLapMs = (str) => {
+          if (!str) return NaN;
+          const parts = str.split(':');
+          if (parts.length === 2) {
+            return parseFloat(parts[0]) * 60000 + parseFloat(parts[1]) * 1000;
+          }
+          return parseFloat(str) * 1000;
+        };
+
+        const b1 = liveD1.bestLap || sim1.bestLap;
+        const b2 = liveD2.bestLap || sim2.bestLap;
+        if (b1 && b2) {
+          const ms1 = parseLapMs(b1);
+          const ms2 = parseLapMs(b2);
+          if (!isNaN(ms1) && !isNaN(ms2)) {
+            const diff = Math.abs((ms2 - ms1) / 1000);
+            deltaStr = `+${diff.toFixed(3)}s`;
+          }
+        }
 
         teamData = {
           teamShort: (team.shortName || team.name || 'TEAM').toUpperCase(),
           teamColor: team.color || '#FE5000',
-          delta: `${(Math.abs(d2.pos - d1.pos) * 0.35 + 0.12).toFixed(2)}s`,
+          delta: deltaStr,
           d1: {
-            driver: d1.code,
-            pos: d1.pos,
+            driver: liveD1.code,
+            pos: liveD1.pos,
+            bestLap: b1 || '--:--.---',
+            sectors: (liveD1.sectors && liveD1.sectors.length) ? liveD1.sectors : (sim1.sectors || []),
             gear: sim1.gear || 7,
             speed: sim1.speed || 310,
             drs: sim1.drs || 0,
             brake: sim1.brake || 0,
             throttle: sim1.throttle || 100,
-            tire: d1.tire || 'M',
-            tireAge: d1.tireAge !== undefined ? d1.tireAge : 1
+            tire: liveD1.tire || 'M',
+            tireAge: liveD1.tireAge !== undefined ? liveD1.tireAge : 1
           },
           d2: {
-            driver: d2.code,
-            pos: d2.pos,
+            driver: liveD2.code,
+            pos: liveD2.pos,
+            bestLap: b2 || '--:--.---',
+            sectors: (liveD2.sectors && liveD2.sectors.length) ? liveD2.sectors : (sim2.sectors || []),
             gear: sim2.gear || 7,
             speed: sim2.speed || 306,
             drs: sim2.drs || 0,
             brake: sim2.brake || 0,
             throttle: sim2.throttle || 95,
-            tire: d2.tire || 'M',
-            tireAge: d2.tireAge !== undefined ? d2.tireAge : 1
+            tire: liveD2.tire || 'M',
+            tireAge: liveD2.tireAge !== undefined ? liveD2.tireAge : 1
           }
         };
       } else if (window.F1Simulator) {
@@ -764,7 +839,7 @@
       connErrorEl.classList.add('hidden');
       if (teamData) renderSplit(teamData);
     } catch (err) {
-      console.warn('[RF1] Split fetch error:', err);
+      console.warn('[RF1] Split fetch error:', err ? (err.stack || err.message) : err);
     } finally {
       isFetching = false;
     }

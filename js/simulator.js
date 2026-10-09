@@ -10,8 +10,8 @@
       shortName: 'MCLAREN',
       color: '#FF8000',
       drivers: [
-        { number: 4, code: 'NOR', name: 'Lando Norris', compound: 'H', baseTireAge: 18, basePos: 1 },
-        { number: 81, code: 'PIA', name: 'Oscar Piastri', compound: 'M', baseTireAge: 11, basePos: 4 }
+        { number: 1, code: 'NOR', name: 'Lando Norris', compound: 'M', baseTireAge: 1, basePos: 1 },
+        { number: 81, code: 'PIA', name: 'Oscar Piastri', compound: 'M', baseTireAge: 1, basePos: 4 }
       ]
     },
     {
@@ -19,8 +19,8 @@
       shortName: 'RED BULL',
       color: '#3671C6',
       drivers: [
-        { number: 1, code: 'VER', name: 'Max Verstappen', compound: 'M', baseTireAge: 12, basePos: 2 },
-        { number: 11, code: 'PER', name: 'Sergio Perez', compound: 'H', baseTireAge: 19, basePos: 9 }
+        { number: 3, code: 'VER', name: 'Max Verstappen', compound: 'M', baseTireAge: 1, basePos: 2 },
+        { number: 11, code: 'PER', name: 'Sergio Perez', compound: 'H', baseTireAge: 1, basePos: 9 }
       ]
     },
     {
@@ -277,6 +277,34 @@
         gap = `+${gapSec}s`;
       }
 
+      // Best Lap & Sectors simulation
+      const baseLapSec = 93.4 + (driver.basePos - 1) * 0.28;
+      const min = Math.floor(baseLapSec / 60);
+      const secRem = (baseLapSec % 60).toFixed(3);
+      const bestLap = `${min}:${secRem < 10 ? '0' : ''}${secRem}`;
+
+      const s1Time = (33.5 + driver.basePos * 0.08).toFixed(2);
+      const s2Time = (45.1 + driver.basePos * 0.10).toFixed(2);
+      const s3Time = (36.3 + driver.basePos * 0.07).toFixed(2);
+
+      let s1Color = 'sector-yellow';
+      let s2Color = 'sector-yellow';
+      let s3Color = 'sector-yellow';
+
+      if (driver.basePos === 1) {
+        s1Color = 'sector-purple';
+        s2Color = 'sector-green';
+        s3Color = 'sector-purple';
+      } else if (driver.basePos === 2) {
+        s1Color = 'sector-green';
+        s2Color = 'sector-purple';
+        s3Color = 'sector-green';
+      } else if (driver.basePos <= 5) {
+        s1Color = 'sector-green';
+        s2Color = 'sector-green';
+        s3Color = 'sector-yellow';
+      }
+
       return {
         driver: driver.code,
         number: driver.number,
@@ -286,6 +314,12 @@
         teamColor: driver.teamColor || driver.color,
         pos: driver.basePos,
         gap: gap,
+        bestLap: bestLap,
+        sectors: [
+          { number: 1, val: s1Time, colorClass: s1Color },
+          { number: 2, val: s2Time, colorClass: s2Color },
+          { number: 3, val: s3Time, colorClass: s3Color }
+        ],
         lap: currentCompletedLaps,
         totalLaps: this.totalLaps,
         speed: speed,
@@ -306,7 +340,7 @@
     }
 
     getDriverTelemetry(driverNumber) {
-      const num = parseInt(driverNumber, 10) || 4;
+      const num = parseInt(driverNumber, 10) || 1;
       const driver = ALL_DRIVERS.find(d => d.number === num) || ALL_DRIVERS[0];
       const globalIdx = driver.basePos - 1;
       return this.computeTelemetry(driver, globalIdx);
@@ -320,13 +354,24 @@
 
       const t1 = this.computeTelemetry(d1, d1.basePos - 1);
       const t2 = this.computeTelemetry(d2, d2.basePos - 1);
-      const deltaSec = Math.abs(t1.pos - t2.pos) * 1.45 + (Math.sin(Date.now() / 12000) * 0.2);
+
+      const parseLapMs = (str) => {
+        if (!str) return 0;
+        const parts = str.split(':');
+        if (parts.length === 2) {
+          return parseFloat(parts[0]) * 60000 + parseFloat(parts[1]) * 1000;
+        }
+        return parseFloat(str) * 1000;
+      };
+      const ms1 = parseLapMs(t1.bestLap);
+      const ms2 = parseLapMs(t2.bestLap);
+      const diffSec = Math.abs((ms2 - ms1) / 1000).toFixed(3);
 
       return {
         teamName: team.name,
         teamShort: team.shortName,
         teamColor: team.color,
-        delta: `+${deltaSec.toFixed(2)}s`,
+        delta: `Δ +${diffSec}s`,
         d1: t1,
         d2: t2,
         mode: 'REPLAY',
