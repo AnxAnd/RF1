@@ -385,12 +385,15 @@
     }
 
     setFlag(type, msg) {
-      if (!type || type === 'CLEAR' || type === 'GREEN') {
+      const t = (type || '').toUpperCase();
+      if (!t || t === 'CLEAR' || t === 'GREEN') {
         this.customFlag = { type: 'GREEN', title: 'GREEN FLAG', msg: 'TRACK CLEAR', isCaution: false };
+      } else if (t === 'CHEQUERED') {
+        this.customFlag = { type: 'CHEQUERED', title: 'CHEQUERED FLAG', msg: msg || 'CHEQUERED FLAG', isCaution: false };
       } else {
         this.customFlag = {
-          type: type.toUpperCase(),
-          title: type.toUpperCase().includes('RED') ? 'RED FLAG' : 'YELLOW FLAG',
+          type: t,
+          title: t.includes('RED') ? 'RED FLAG' : 'YELLOW FLAG',
           msg: msg || 'CAUTION ON TRACK',
           isCaution: true
         };

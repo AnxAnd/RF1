@@ -43,8 +43,10 @@
   const teamStripe = document.getElementById('team-stripe');
   const driverCodeEl = document.getElementById('driver-code');
   const driverNumEl = document.getElementById('driver-num');
+  const driverLastNameEl = document.getElementById('driver-last-name');
   const driverPosEl = document.getElementById('driver-pos');
   const driverGapEl = document.getElementById('driver-gap');
+  const hudFlagBadge = document.getElementById('hud-flag-badge');
   const hudTrackFlag = document.getElementById('hud-track-flag');
   const hudTrackName = document.getElementById('hud-track-name');
   const trackWatermarkPath = document.getElementById('track-watermark-path');
@@ -374,6 +376,10 @@
     const d = getSelectedDriver();
     driverCodeEl.textContent = d.code;
     driverNumEl.textContent = d.number;
+    if (driverLastNameEl) {
+      const parts = (d.name || d.code).split(' ');
+      driverLastNameEl.textContent = parts[parts.length - 1].toUpperCase();
+    }
     teamStripe.style.backgroundColor = d.color || '#FF8000';
     if (d.teamIndex !== undefined) {
       currentTeamIndex = d.teamIndex;
@@ -415,6 +421,10 @@
         const d = drivers[dIdx];
         driverCodeEl.textContent = d.code;
         driverNumEl.textContent = d.number;
+        if (driverLastNameEl) {
+          const parts = (d.name || d.code).split(' ');
+          driverLastNameEl.textContent = parts[parts.length - 1].toUpperCase();
+        }
         teamStripe.style.backgroundColor = d.color || '#FF8000';
       }
     }
@@ -491,11 +501,26 @@
         flagMsgText.textContent = flagState.msg || 'DEPLOYED';
       }
     } else if (currentType === 'CHEQUERED') {
-      flagBannerEl.classList.remove('hidden');
-      flagBannerEl.classList.add('flag-chequered');
-      flagBadgePill.textContent = '🏁 FINISH';
-      flagMsgText.textContent = 'CHEQUERED FLAG';
+      if (lastFlagType !== 'CHEQUERED') {
+        clearTimeout(greenBannerTimer);
+        flagBannerEl.classList.remove('hidden');
+        flagBannerEl.classList.add('flag-chequered');
+        flagBadgePill.textContent = '🏁 FINISH';
+        flagMsgText.textContent = 'CHEQUERED FLAG';
+
+        // Auto-dismiss large banner after 6 seconds so it never obstructs telemetry
+        greenBannerTimer = setTimeout(() => {
+          flagBannerEl.classList.add('hidden');
+        }, 6000);
+      }
+      if (hudFlagBadge) {
+        hudFlagBadge.textContent = '🏁';
+        hudFlagBadge.classList.remove('hidden');
+      }
     } else if (currentType === 'GREEN') {
+      if (hudFlagBadge) {
+        hudFlagBadge.classList.add('hidden');
+      }
       if (lastFlagType && lastFlagType !== 'GREEN') {
         // Just transitioned from caution to green
         flagBannerEl.classList.remove('hidden');
@@ -511,6 +536,10 @@
         }, 3500);
       } else if (!flagBannerEl.classList.contains('flag-green')) {
         flagBannerEl.classList.add('hidden');
+      }
+    } else {
+      if (hudFlagBadge) {
+        hudFlagBadge.classList.add('hidden');
       }
     }
 
