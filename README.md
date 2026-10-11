@@ -58,8 +58,8 @@ The **Manufacturer Split View** provides an in-depth, side-by-side performance a
 ┌────────────────────────────────────────────────────────┐
 │ ◀ ▌ MCLAREN     ▶   │  Δ +0.840s  │  SINGAPORE GP     │
 ├──────────────────────────┬─────────────────────────────┤
-│ NOR                  P1  │ PIA                     P4  │
-│ [BEST]         1:33.400  │ [BEST]            1:34.240  │
+│ NOR ⏱️               P1  │ PIA                     P4  │
+│ [BEST]  🟣 1:33.400      │ [BEST]            1:34.240  │
 │ ┌───────┬───────┬──────┐ │ ┌───────┬───────┬─────────┐ │
 │ │S1 33.5│S2 45.2│S3 36.3 │ │S1 33.8│S2 45.5│S3 36.5  │ │
 │ │PURPLE │ GREEN │PURPLE│ │ │ GREEN │ GREEN │ YELLOW  │ │
@@ -68,24 +68,28 @@ The **Manufacturer Split View** provides an in-depth, side-by-side performance a
 │ SPD                 310  │ SPD                    306  │
 │       [DRS OFF]          │        [DRS ACTIVE]         │
 │  [BRK: 0%] [THR: 100%]   │   [BRK: 0%] [THR: 95%]      │
-│  (M) 12 Laps             │   (H) 18 Laps               │
+│  (H) 22L  1P 2.4s        │   (M) 11L  1P 2.6s          │
 └──────────────────────────┴─────────────────────────────┘
 ```
 
 #### Key Capabilities in Split View:
-* **Best Lap Comparison**: Dedicated `BEST` lap time badge for each teammate displaying their quickest lap of the session down to the thousandth of a second.
+* **Best Lap Comparison & Fastest Lap Stopwatch**: Dedicated `BEST` lap time badge for each teammate displaying their quickest lap down to the thousandth of a second. If either driver holds the **session fastest lap**, an official **purple stopwatch badge** (⏱️) and luminous purple glow highlights their time.
 * **Teammate Lap Delta (`Δ`)**: Prominent top delta pill computing the exact lap time differential between teammates (e.g., `Δ +0.840s`), matching official F1 broadcast graphics.
 * **Official F1 TV Broadcast Sector Colors (S1, S2, S3)**:
   * 🟣 **Purple (`.sector-purple`)**: **Overall Session Fastest** — The quickest time recorded across all drivers in that sector.
   * 🟢 **Green (`.sector-green`)**: **Personal Best** — The driver's personal fastest time in that sector.
   * 🟡 **Yellow (`.sector-yellow`)**: **Slower / No Improvement** — Regular sector time with no personal improvement.
   * ⚪ **Neutral (`.sector-none`)**: In-pit or out-lap without a valid timed split.
+* **Pit Stops & Stationary Duration**:
+  * Displays completed pit stop count badges (`1P`, `2P`, `3P`) alongside tyre age.
+  * Shows exact stationary stop duration (e.g. `2.4s`, `2.6s`).
+  * Displays an animated pulsing `IN PIT` badge and pit lane limiter telemetry (`80 KM/H`, `DRS OFF`) when a teammate is in the pit lane.
 * **Real-Time Telemetry Traces**:
   * **Gear indicator** (`1`–`8`, `N`)
   * **Digital Speedometer** in `KM/H`
   * **DRS Flap Indicator** (glowing cyan when open and deployed)
   * **Proportional Pedal Meters**: Live dual vertical bars showing real-time Brake (neon red) and Throttle (electric green) percentages
-  * **Tyre Compound & Stint Age**: Official compound badges (`S` Soft, `M` Medium, `H` Hard, `I` Intermediate, `W` Wet) plus stint lap counts.
+  * **Live Tyre Compounds**: Synchronized compound badges (`S` Soft, `M` Medium, `H` Hard, `I` Intermediate, `W` Wet) updating immediately upon tyre swaps.
 * **Effortless Manufacturer Switching**:
   * Tap the **`◀` Previous** or **`▶` Next** arrow buttons.
   * Tap the **Manufacturer Title** to advance to the next team.
@@ -96,7 +100,7 @@ The **Manufacturer Split View** provides an in-depth, side-by-side performance a
 ---
 
 ### 🏁 2. Cockpit Telemetry HUD (`HUD`)
-> *Driver's steering wheel cockpit display with RPM shift lights and circuit watermark.*
+> *Driver's steering wheel cockpit display with RPM shift lights, pit records, and circuit watermark.*
 
 * **12-LED Progressive Shift Lights**:
   * **4 Green LEDs**: Low rev range (0–55% RPM)
@@ -108,22 +112,26 @@ The **Manufacturer Split View** provides an in-depth, side-by-side performance a
   * **Dynamic DRS Status Pill**: Inactive dark badge illuminates in neon cyan (`#00F5D4`) when the rear-wing flap opens in a DRS activation zone.
 * **Glowing Circuit Watermark**:
   * Subtle glowing vector outline of the active circuit layout sits directly behind the cockpit gauges.
-* **Cockpit Footer**:
+* **Cockpit Footer & Pit Status**:
   * Proportional vertical pedal columns (`BRK` 0–100% and `THR` 0–100%).
   * Tyre compound badge and stint wear counter.
+  * **Pit Stop Badge**: Shows driver stop count and last stationary stop time (e.g. `1 STOP (2.4s)`, `2 STOPS (2.3s)`), or active `🛑 IN PIT` indicator.
   * Lap counter showing current lap vs total race distance (e.g. `L 18/62`).
 * **Non-Intrusive Driver Header**:
   * Displays 2026 driver numbers (e.g., `NOR 1`, `VER 3`, `PIA 81`), driver surname, position badge (`P1`), and gap to the car ahead (`LEADER` or `+1.263s`).
+  * **Fastest Lap Stopwatch (⏱️)**: Illuminates a glowing purple stopwatch badge next to the driver's number whenever they hold the session fastest lap.
 
 ---
 
 ### 📊 3. Race Timing Tower (`TOWER`)
-> *Live 22-car race classification and timing intervals across all 11 constructor teams.*
+> *Live 22-car race classification, pit stop records, and timing intervals across all 11 constructor teams.*
 
 * **Full Grid Standings**: Instant visibility of the entire grid ordered by track position (`P1` to `P22`).
 * **Constructor Livery Stripes**: High-visibility team color bars next to each driver abbreviation (`NOR`, `VER`, `LEC`, `HAM`, `PIA`, `RUS`, etc.).
+* **Pit Stop Badges**: Compact pit count badges (`0P`, `1P`, `2P`, `3P`) next to each car's tyre compound. When a car pits, the badge flashes `PIT` and the gap column displays an animated `IN PIT` tag.
 * **Timing & Gap Intervals**: Real-time delta to leader or car ahead (`LEADER`, `+2.450s`), plus pit status indicators (`IN PIT`, `OUT LAP`).
-* **Tyre Compounds**: Clear circular compound badges (`S`, `M`, `H`, `I`, `W`) displaying each car's current rubber.
+* **Fastest Lap Purple Stopwatch**: High-visibility purple stopwatch badge beside the driver with the session's overall fastest lap, with lap delta highlighted in purple.
+* **Tyre Compounds**: Clear circular compound badges (`S`, `M`, `H`, `I`, `W`) displaying each car's current rubber, automatically synchronized as pit stops occur.
 * **One-Tap Driver Focus**: Tap any driver in the timing tower to instantly switch into their individual Cockpit HUD!
 
 ---
@@ -154,9 +162,22 @@ RF1 listens to official FIA race control messages and triggers instant visual wa
 * 🔴 **RED FLAG**: Session suspended.
 * 🏁 **CHEQUERED FLAG**: Session completed / race finish.
 
-*Smart UI Placement*: Flag banners are positioned to never obscure the driver name or critical gauges. Banners can be dismissed with a tap, and automatically reappear if the flag condition changes.
+*Smart UI Placement & Safety Priority*: Flag banners are positioned to never obscure critical gauges. Official caution flags strictly take priority over pit stop notifications. Banners can be dismissed with a tap, and automatically reappear if the flag condition changes.
 
 ---
+
+### 🛑 6. Pit Stop Intelligence & Live Tyre Tracking
+> *Comprehensive pit lane tracking, stationary stop duration timing, and live tyre compound synchronization.*
+
+* **Pit Stop Alert Banner**:
+  * **Pit Entry Alert**: High-contrast blue banner with `🛑 PIT LANE` pill announcing `[DRIVER] #[NUM] IN PIT LANE`.
+  * **Stationary Stop Timing**: When a driver rejoins the track, RF1 calculates their stationary stop duration down to the tenth of a second (e.g. `🛑 PIT STOP` • `HAMILTON #44 • 2.4s STOP`).
+* **Live Tyre Compound Synchronization**:
+  * Overhauled live stint extraction to filter out non-stint protocol artifacts and resolve active compounds (`S` Soft, `M` Medium, `H` Hard, `I` Intermediate, `W` Wet) in real time across Cockpit HUD, Teammate Split, and Timing Tower views.
+* **Persistent Pit Counters**:
+  * **Split View**: Displays teammate stop count (`1P`, `2P`) and stop duration (`2.4s`).
+  * **Timing Tower**: Displays pit count badges for all 22 cars with live `IN PIT` status.
+  * **Cockpit HUD**: Displays driver stop count and last stationary stop time.
 
 ## 🏎️ 2026 Formula 1 Driver Grid & Constructors
 
