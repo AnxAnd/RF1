@@ -1515,3 +1515,158 @@ body {
   border-color: #FE5000;
 }
 
+/* ----------------------------------------------------
+   FASTEST LAP PURPLE STOPWATCH INDICATORS
+   ---------------------------------------------------- */
+.purple-stopwatch-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.purple-stopwatch-badge.hidden {
+  display: none !important;
+}
+
+.purple-stopwatch-icon {
+  display: inline-block;
+  color: #B138DD;
+  stroke: #B138DD;
+  filter: drop-shadow(0 0 3px rgba(177, 56, 221, 0.8));
+  vertical-align: middle;
+}
+
+.split-driver-id {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.tower-fastest-badge {
+  margin-left: 3px;
+  display: inline-flex;
+}
+
+.split-best-lap-val.fastest-purple {
+  color: #B138DD !important;
+  text-shadow: 0 0 5px rgba(177, 56, 221, 0.7);
+}
+
+.tower-gap.fastest-purple {
+  color: #B138DD !important;
+  font-weight: 700;
+}
+
+/* ----------------------------------------------------
+   PIT STOP INDICATORS, BADGES & ALERT BANNER
+   ---------------------------------------------------- */
+.flag-alert-banner.flag-pit {
+  background: #0088CC;
+  color: #FFFFFF;
+  animation: flagFlashPitBg 0.8s infinite alternate;
+}
+
+.flag-alert-banner.flag-pit .flag-badge-pill {
+  background: #001B36;
+  color: #00E5FF;
+  border: 1px solid #00E5FF;
+}
+
+.r1-viewport.flash-pit-border {
+  animation: cockpitBorderFlashPit 0.8s infinite alternate !important;
+}
+
+@keyframes cockpitBorderFlashPit {
+  0% {
+    box-shadow: inset 0 0 18px rgba(0, 229, 255, 0.95), 0 0 20px rgba(0, 163, 224, 0.8);
+    border-color: #00E5FF;
+  }
+  100% {
+    box-shadow: inset 0 0 4px rgba(0, 229, 255, 0.3), 0 0 5px rgba(0, 163, 224, 0.25);
+    border-color: rgba(0, 229, 255, 0.4);
+  }
+}
+
+@keyframes flagFlashPitBg {
+  0% { background: #006699; }
+  100% { background: #00A3E0; }
+}
+
+@keyframes blinkPit {
+  0% { opacity: 0.55; }
+  100% { opacity: 1; }
+}
+
+/* Timing Tower Pit Badge */
+.tower-pit-badge {
+  font-size: 8px;
+  font-weight: 700;
+  color: #888888;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 1px 3px;
+  border-radius: 2px;
+  line-height: 1;
+}
+
+.tower-pit-badge.in-pit {
+  background: #00A3E0;
+  color: #FFFFFF;
+  font-weight: 800;
+  animation: blinkPit 0.7s infinite alternate;
+}
+
+.tower-in-pit-tag {
+  color: #00E5FF !important;
+  font-weight: 800;
+  animation: blinkPit 0.7s infinite alternate;
+}
+
+/* Teammate Split Pit Display */
+.split-pit-badge {
+  font-size: 8px;
+  font-weight: 800;
+  color: #00E5FF;
+  background: rgba(0, 229, 255, 0.12);
+  padding: 1px 3px;
+  border-radius: 2px;
+  line-height: 1;
+  margin-left: 2px;
+}
+
+.split-pit-badge.in-pit {
+  background: #00A3E0;
+  color: #FFFFFF;
+  animation: blinkPit 0.7s infinite alternate;
+}
+
+.split-pit-time {
+  font-size: 8px;
+  font-weight: 700;
+  color: #888888;
+  margin-left: 2px;
+}
+
+/* Cockpit HUD Pit Badge */
+.hud-pit-badge {
+  font-size: 8px;
+  font-weight: 700;
+  color: #00E5FF;
+  background: rgba(0, 229, 255, 0.12);
+  padding: 1px 4px;
+  border-radius: 2px;
+  line-height: 1;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+.hud-pit-badge.in-pit {
+  background: #00A3E0;
+  color: #FFFFFF;
+  font-weight: 800;
+  animation: blinkPit 0.7s infinite alternate;
+}
+
+
+

@@ -67,6 +67,14 @@
             <span id="team-stripe" class="team-stripe"></span>
             <span id="driver-code" class="code">NOR</span>
             <span id="driver-num" class="num">1</span>
+            <span id="hud-fastest-lap" class="purple-stopwatch-badge hidden" title="Fastest Lap">
+              <svg class="purple-stopwatch-icon" viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#B138DD" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="8" cy="9" r="6"/>
+                <path d="M8 6v3l2 1"/>
+                <path d="M8 1v2"/>
+                <path d="M6 1h4"/>
+              </svg>
+            </span>
           </div>
           <div class="hud-metrics">
             <span id="driver-pos" class="pos-badge">P1</span>
@@ -144,6 +152,7 @@
             <div class="tire-row">
               <span id="tire-compound" class="compound-badge compound-h">H</span>
               <span id="tire-age" class="tire-age-text">1 LAP</span>
+              <span id="hud-pit-badge" class="hud-pit-badge">0 STOPS</span>
             </div>
             <div class="lap-row">
               <button id="btn-restart-lap" class="lap-row-btn" title="Tap to restart race from Lap 1">
@@ -187,7 +196,17 @@
           <!-- Teammate 1 -->
           <div class="split-col" id="split-col-1">
             <div class="split-driver-header">
-              <span id="s1-code" class="split-driver-code">NOR</span>
+              <div class="split-driver-id">
+                <span id="s1-code" class="split-driver-code">NOR</span>
+                <span id="s1-fastest-lap" class="purple-stopwatch-badge hidden" title="Fastest Lap">
+                  <svg class="purple-stopwatch-icon" viewBox="0 0 16 16" width="10" height="10" fill="none" stroke="#B138DD" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="8" cy="9" r="6"/>
+                    <path d="M8 6v3l2 1"/>
+                    <path d="M8 1v2"/>
+                    <path d="M6 1h4"/>
+                  </svg>
+                </span>
+              </div>
               <span id="s1-pos" class="pos-badge">P1</span>
             </div>
             <!-- Best Lap -->
@@ -226,6 +245,8 @@
             <div class="split-tire-row">
               <span id="s1-compound" class="compound-badge compound-h">H</span>
               <span id="s1-tire-age" class="split-tire-age">22L</span>
+              <span id="s1-pit-badge" class="split-pit-badge" title="Pit Stops">1P</span>
+              <span id="s1-pit-time" class="split-pit-time">2.4s</span>
             </div>
           </div>
 
@@ -235,7 +256,17 @@
           <!-- Teammate 2 -->
           <div class="split-col" id="split-col-2">
             <div class="split-driver-header">
-              <span id="s2-code" class="split-driver-code">PIA</span>
+              <div class="split-driver-id">
+                <span id="s2-code" class="split-driver-code">PIA</span>
+                <span id="s2-fastest-lap" class="purple-stopwatch-badge hidden" title="Fastest Lap">
+                  <svg class="purple-stopwatch-icon" viewBox="0 0 16 16" width="10" height="10" fill="none" stroke="#B138DD" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="8" cy="9" r="6"/>
+                    <path d="M8 6v3l2 1"/>
+                    <path d="M8 1v2"/>
+                    <path d="M6 1h4"/>
+                  </svg>
+                </span>
+              </div>
               <span id="s2-pos" class="pos-badge">P4</span>
             </div>
             <!-- Best Lap -->
@@ -274,6 +305,8 @@
             <div class="split-tire-row">
               <span id="s2-compound" class="compound-badge compound-m">M</span>
               <span id="s2-tire-age" class="split-tire-age">11L</span>
+              <span id="s2-pit-badge" class="split-pit-badge" title="Pit Stops">1P</span>
+              <span id="s2-pit-time" class="split-pit-time">2.6s</span>
             </div>
           </div>
         </div>

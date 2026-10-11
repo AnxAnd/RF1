@@ -64,6 +64,7 @@
   const throttlePctEl = document.getElementById('throttle-pct');
   const tireCompoundEl = document.getElementById('tire-compound');
   const tireAgeEl = document.getElementById('tire-age');
+  const hudPitBadge = document.getElementById('hud-pit-badge');
   const lapCounterEl = document.getElementById('lap-counter');
   const hudSessionSub = document.getElementById('hud-session-sub');
   const leds = document.querySelectorAll('.led');
@@ -98,6 +99,8 @@
   const s1ThrBar = document.getElementById('s1-thr-bar');
   const s1Compound = document.getElementById('s1-compound');
   const s1TireAge = document.getElementById('s1-tire-age');
+  const s1PitBadge = document.getElementById('s1-pit-badge');
+  const s1PitTime = document.getElementById('s1-pit-time');
 
   const s2Code = document.getElementById('s2-code');
   const s2Pos = document.getElementById('s2-pos');
@@ -119,6 +122,8 @@
   const s2ThrBar = document.getElementById('s2-thr-bar');
   const s2Compound = document.getElementById('s2-compound');
   const s2TireAge = document.getElementById('s2-tire-age');
+  const s2PitBadge = document.getElementById('s2-pit-badge');
+  const s2PitTime = document.getElementById('s2-pit-time');
 
   // Tower Elements
   const towerSessionEl = document.getElementById('tower-session');
@@ -169,6 +174,43 @@
     }, 1200);
   }
 
+  // Lap Time & Fastest Lap Helpers
+  function parseLapTimeMs(str) {
+    if (!str || typeof str !== 'string') return NaN;
+    const clean = str.trim();
+    if (!clean || clean.includes('--')) return NaN;
+    const parts = clean.split(':');
+    if (parts.length === 2) {
+      const min = parseFloat(parts[0]);
+      const sec = parseFloat(parts[1]);
+      if (isNaN(min) || isNaN(sec)) return NaN;
+      return min * 60000 + sec * 1000;
+    }
+    const sec = parseFloat(clean);
+    return isNaN(sec) ? NaN : sec * 1000;
+  }
+
+  function getStopwatchSvg(size = 11) {
+    return `<svg class="purple-stopwatch-icon" viewBox="0 0 16 16" width="${size}" height="${size}" fill="none" stroke="#B138DD" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-label="Fastest Lap"><circle cx="8" cy="9" r="6"/><path d="M8 6v3l2 1"/><path d="M8 1v2"/><path d="M6 1h4"/></svg>`;
+  }
+
+  function getFastestLapDriverNumber(driverList) {
+    if (!driverList || !driverList.length) return null;
+    let minMs = Infinity;
+    let fastestNum = null;
+    driverList.forEach(d => {
+      const bl = d.bestLap;
+      if (bl) {
+        const ms = parseLapTimeMs(bl);
+        if (!isNaN(ms) && ms > 0 && ms < minMs) {
+          minMs = ms;
+          fastestNum = d.number;
+        }
+      }
+    });
+    return fastestNum;
+  }
+
   // Wake Lock
   async function requestWakeLock() {
     if ('wakeLock' in navigator) {
@@ -215,6 +257,11 @@
   }
 
   function restartRace() {
+    if (activeMode === 'LIVE') {
+      showToast('🔄 REFRESHING LIVE TRACK...');
+      refreshActiveView();
+      return;
+    }
     if (window.F1Simulator) {
       window.F1Simulator.restart();
     }
@@ -394,6 +441,7 @@
         const isLive = window.F1LiveTiming.isSessionLive(rawData);
 
         if (isLive) {
+          lastFinalisedLiveRawData = null; // Clear finalised session cache
           const liveDrivers = window.F1LiveTiming.parseLeaderboard(rawData);
           if (liveDrivers && liveDrivers.length > 0) {
             activeMode = 'LIVE';
@@ -429,8 +477,15 @@
             if (towerTrackName) towerTrackName.textContent = trackName;
 
             const sDetails = window.F1LiveTiming.getSessionDetails(rawData);
+            const lapCount = rawData.LapCount || {};
+            const liveLap = lapCount.CurrentLap || (drivers[0] && (drivers[0].laps || drivers[0].tireAge)) || 1;
+            const liveTotal = lapCount.TotalLaps || 62;
+
             if (towerSessionEl) {
-              towerSessionEl.textContent = sDetails.isRace ? 'LIVE' : sDetails.part;
+              towerSessionEl.textContent = sDetails.isRace ? `L ${liveLap}/${liveTotal}` : sDetails.part;
+            }
+            if (lapCounterEl) {
+              lapCounterEl.textContent = sDetails.isRace ? `L ${liveLap}/${liveTotal}` : (sDetails.timeLeftText || sDetails.part);
             }
             if (hudSessionSub) {
               if (sDetails.isRace) {
@@ -504,10 +559,73 @@
       }
       connErrorEl.classList.add('hidden');
       updateHUDDriverHeader();
-      updateKeyIndicators();
       renderPastRacesList(currentSeasonFilter);
       selectTrack('singapore'); // Initial track setup
-      // Keep launch view as 'races' selector
+
+      // Auto-connect if live race session is currently running on track!
+      if (window.F1LiveTiming) {
+        try {
+          const rawData = await window.F1LiveTiming.getLeaderboard();
+          const isLive = window.F1LiveTiming.isSessionLive(rawData);
+          if (isLive) {
+            lastFinalisedLiveRawData = null;
+            const liveDrivers = window.F1LiveTiming.parseLeaderboard(rawData);
+            if (liveDrivers && liveDrivers.length > 0) {
+              activeMode = 'LIVE';
+              drivers = liveDrivers;
+              const extractedTeams = window.F1LiveTiming.extractTeams(liveDrivers);
+              if (extractedTeams.length > 0) teams = extractedTeams;
+              currentDriverIndex = 0;
+              currentTeamIndex = 0;
+
+              const session = rawData.Session;
+              let trackName = 'SINGAPORE GP';
+              let trackFlag = '🇸🇬';
+              if (session && session.Meeting) {
+                const mName = session.Meeting.Name || 'Singapore Grand Prix';
+                trackName = mName.toUpperCase();
+                if (session.Meeting.Country && session.Meeting.Country.Code === 'SGP') {
+                  trackFlag = '🇸🇬';
+                }
+              }
+
+              if (hudTrackFlag) hudTrackFlag.textContent = trackFlag;
+              if (hudTrackName) hudTrackName.textContent = trackName.replace(' GRAND PRIX', '').replace(' GP', '');
+              if (splitTrackName) splitTrackName.textContent = trackName;
+              if (towerTrackName) towerTrackName.textContent = trackName;
+
+              const sDetails = window.F1LiveTiming.getSessionDetails(rawData);
+              const lapCount = rawData.LapCount || {};
+              const liveLap = lapCount.CurrentLap || (drivers[0] && (drivers[0].laps || drivers[0].tireAge)) || 1;
+              const liveTotal = lapCount.TotalLaps || 62;
+
+              if (towerSessionEl) {
+                towerSessionEl.textContent = sDetails.isRace ? `L ${liveLap}/${liveTotal}` : sDetails.part;
+              }
+              if (lapCounterEl) {
+                lapCounterEl.textContent = sDetails.isRace ? `L ${liveLap}/${liveTotal}` : (sDetails.timeLeftText || sDetails.part);
+              }
+              if (hudSessionSub) {
+                if (sDetails.isRace) {
+                  hudSessionSub.textContent = sDetails.part === 'SPRINT' ? 'SPRINT' : 'GRAND PRIX';
+                } else {
+                  hudSessionSub.textContent = `${sDetails.part} ${sDetails.sessionType || 'QUALI'}`.toUpperCase();
+                }
+              }
+              updateTowerTicker(sDetails.tickerText);
+              updateHUDDriverHeader();
+              updateKeyIndicators();
+              showToast(`🔴 LIVE: ${trackName}`);
+              switchView('hud');
+              return;
+            }
+          }
+        } catch (e) {
+          console.warn('[RF1] Live check error during init:', e);
+        }
+      }
+
+      updateKeyIndicators();
       switchView('races');
     } catch (err) {
       console.warn('[RF1] Init data error:', err);
@@ -575,6 +693,14 @@
       const foundIdx = teams.findIndex(t => t.drivers && t.drivers.some(td => td.number === d.number));
       if (foundIdx !== -1) currentTeamIndex = foundIdx;
     }
+
+    const fastestNum = getFastestLapDriverNumber(drivers);
+    const isFastest = Boolean(d.isFastestLap || (fastestNum && d.number === fastestNum));
+    const hudFastestEl = document.getElementById('hud-fastest-lap');
+    if (hudFastestEl) {
+      if (isFastest) hudFastestEl.classList.remove('hidden');
+      else hudFastestEl.classList.add('hidden');
+    }
   }
 
   // Select Driver explicitly (from Standings list)
@@ -584,6 +710,32 @@
       currentDriverIndex = idx;
       updateHUDDriverHeader();
       showToast(`${drivers[idx].code} #${drivers[idx].number}`);
+      if (window.F1Simulator) {
+        const d = drivers[idx];
+        const telem = window.F1Simulator.getDriverTelemetry(d.number);
+        telem.number = d.number;
+        telem.code = d.code;
+        telem.pos = d.pos;
+        telem.gap = d.gap;
+        telem.tire = d.tire;
+        telem.tireAge = d.tireAge !== undefined ? d.tireAge : 1;
+        telem.pitStops = d.pitStops !== undefined ? d.pitStops : 0;
+        telem.inPit = Boolean(d.inPit);
+        telem.lastStopTime = d.lastStopTime || null;
+        telem.bestLap = d.bestLap || telem.bestLap;
+        telem.isFastestLap = Boolean(d.isFastestLap);
+        if (activeMode === 'LIVE') {
+          const raw = (window.F1LiveTiming && window.F1LiveTiming.cache && window.F1LiveTiming.cache.leaderboard) || lastFinalisedLiveRawData;
+          const liveLap = raw?.LapCount?.CurrentLap || (window.F1LiveTiming && window.F1LiveTiming.lastLapCount && window.F1LiveTiming.lastLapCount.CurrentLap);
+          const liveTotal = raw?.LapCount?.TotalLaps || (window.F1LiveTiming && window.F1LiveTiming.lastLapCount && window.F1LiveTiming.lastLapCount.TotalLaps) || 62;
+          if (liveLap) {
+            telem.lap = liveLap;
+            telem.totalLaps = liveTotal;
+            telem.isRace = true;
+          }
+        }
+        renderHUD(telem);
+      }
       switchView('hud');
     }
   }
@@ -594,6 +746,32 @@
     currentDriverIndex = (currentDriverIndex + delta + drivers.length) % drivers.length;
     updateHUDDriverHeader();
     showToast(`${drivers[currentDriverIndex].code} #${drivers[currentDriverIndex].number}`);
+    if (window.F1Simulator) {
+      const d = drivers[currentDriverIndex];
+      const telem = window.F1Simulator.getDriverTelemetry(d.number);
+      telem.number = d.number;
+      telem.code = d.code;
+      telem.pos = d.pos;
+      telem.gap = d.gap;
+      telem.tire = d.tire;
+      telem.tireAge = d.tireAge !== undefined ? d.tireAge : 1;
+      telem.pitStops = d.pitStops !== undefined ? d.pitStops : 0;
+      telem.inPit = Boolean(d.inPit);
+      telem.lastStopTime = d.lastStopTime || null;
+      telem.bestLap = d.bestLap || telem.bestLap;
+      telem.isFastestLap = Boolean(d.isFastestLap);
+      if (activeMode === 'LIVE') {
+        const raw = (window.F1LiveTiming && window.F1LiveTiming.cache && window.F1LiveTiming.cache.leaderboard) || lastFinalisedLiveRawData;
+        const liveLap = raw?.LapCount?.CurrentLap || (window.F1LiveTiming && window.F1LiveTiming.lastLapCount && window.F1LiveTiming.lastLapCount.CurrentLap);
+        const liveTotal = raw?.LapCount?.TotalLaps || (window.F1LiveTiming && window.F1LiveTiming.lastLapCount && window.F1LiveTiming.lastLapCount.TotalLaps) || 62;
+        if (liveLap) {
+          telem.lap = liveLap;
+          telem.totalLaps = liveTotal;
+          telem.isRace = true;
+        }
+      }
+      renderHUD(telem);
+    }
     fetchHUDTelemetry();
   }
 
@@ -734,6 +912,38 @@
     lastFlagType = currentType;
   }
 
+  // Pit Stop Alert Controller
+  let pitBannerTimer = null;
+  function showPitAlert(event) {
+    if (!event || !flagBannerEl) return;
+    if (currentFlagState && currentFlagState.isCaution) return;
+
+    flagBannerEl.classList.remove('flag-yellow', 'flag-red', 'flag-sc', 'flag-green', 'flag-chequered', 'flag-pit');
+    if (appViewport) {
+      appViewport.classList.remove('flash-yellow-border', 'flash-red-border', 'flash-green-border');
+    }
+
+    flagBannerEl.classList.add('flag-pit');
+    if (appViewport) appViewport.classList.add('flash-pit-border');
+    flagBannerEl.classList.remove('hidden');
+
+    if (event.type === 'ENTRY') {
+      flagBadgePill.textContent = '🛑 PIT LANE';
+      flagMsgText.textContent = `${event.name || event.code} #${event.driverNum} IN PIT LANE`;
+    } else {
+      flagBadgePill.textContent = '🛑 PIT STOP';
+      flagMsgText.textContent = `${event.name || event.code} #${event.driverNum} • ${event.stopTime || '2.4s'} STOP`;
+    }
+
+    clearTimeout(pitBannerTimer);
+    pitBannerTimer = setTimeout(() => {
+      if (!currentFlagState || !currentFlagState.isCaution) {
+        flagBannerEl.classList.add('hidden');
+        if (appViewport) appViewport.classList.remove('flash-pit-border');
+      }
+    }, 5500);
+  }
+
   // Update Shift Lights (Including Marshalling Lights Override)
   function updateShiftLights(rpmPct) {
     if (currentFlagState && currentFlagState.isCaution) {
@@ -790,6 +1000,26 @@
     const tireAgeVal = data.tireAge !== undefined ? data.tireAge : 1;
     tireAgeEl.textContent = `${tireAgeVal} ${tireAgeVal === 1 ? 'LAP' : 'LAPS'}`;
 
+    if (hudPitBadge) {
+      if (data.inPit) {
+        hudPitBadge.textContent = '🛑 IN PIT';
+        hudPitBadge.className = 'hud-pit-badge in-pit';
+      } else {
+        const stops = data.pitStops !== undefined ? data.pitStops : 0;
+        const timePart = data.lastStopTime ? ` (${data.lastStopTime})` : '';
+        hudPitBadge.textContent = `${stops} ${stops === 1 ? 'STOP' : 'STOPS'}${timePart}`;
+        hudPitBadge.className = 'hud-pit-badge';
+      }
+    }
+
+    const fastestNum = getFastestLapDriverNumber(drivers);
+    const isFastest = Boolean(data.isFastestLap || (fastestNum && data.number === fastestNum));
+    const hudFastestEl = document.getElementById('hud-fastest-lap');
+    if (hudFastestEl) {
+      if (isFastest) hudFastestEl.classList.remove('hidden');
+      else hudFastestEl.classList.add('hidden');
+    }
+
     const isRace = data.isRace !== false;
     if (isRace) {
       lapCounterEl.textContent = `L ${data.lap || 1}/${data.totalLaps || 62}`;
@@ -798,8 +1028,7 @@
         hudSessionSub.textContent = isSprint ? 'SPRINT' : 'GRAND PRIX';
       }
     } else {
-      const completedLaps = data.driverLaps || data.lap || 1;
-      lapCounterEl.textContent = `${completedLaps} ${completedLaps === 1 ? 'LAP' : 'LAPS'}`;
+      lapCounterEl.textContent = data.sessionCountdown || (activeMode === 'LIVE' ? (data.timeLeftText || data.sessionPart || 'LIVE') : `${data.lap || 1} LAPS`);
       if (hudSessionSub) {
         const subText = data.sessionPart ? `${data.sessionPart} ${data.sessionType || 'QUALI'}` : (data.sessionType || 'QUALIFYING');
         hudSessionSub.textContent = subText.toUpperCase();
@@ -818,11 +1047,23 @@
       splitDeltaBadge.textContent = dStr.startsWith('Δ') ? dStr : `Δ ${dStr}`;
     }
 
+    const fastestNum = getFastestLapDriverNumber(drivers);
+
     // Driver 1
     const d1 = teamData.d1;
     if (s1Code) s1Code.textContent = d1.driver;
     if (s1Pos) s1Pos.textContent = `P${d1.pos}`;
     if (s1BestLap) s1BestLap.textContent = d1.bestLap || '--:--.---';
+    const isFastest1 = Boolean(d1.isFastestLap || (fastestNum && d1.number === fastestNum));
+    const s1FastestEl = document.getElementById('s1-fastest-lap');
+    if (s1FastestEl) {
+      if (isFastest1) s1FastestEl.classList.remove('hidden');
+      else s1FastestEl.classList.add('hidden');
+    }
+    if (s1BestLap) {
+      if (isFastest1) s1BestLap.classList.add('fastest-purple');
+      else s1BestLap.classList.remove('fastest-purple');
+    }
     if (d1.sectors && Array.isArray(d1.sectors)) {
       d1.sectors.forEach((sec, idx) => {
         if (s1SecBoxes[idx] && s1SecVals[idx]) {
@@ -841,12 +1082,34 @@
       s1Compound.className = `compound-badge compound-${(d1.tire || 'm').toLowerCase()}`;
     }
     if (s1TireAge) s1TireAge.textContent = `${d1.tireAge}L`;
+    if (s1PitBadge) {
+      if (d1.inPit) {
+        s1PitBadge.textContent = 'IN PIT';
+        s1PitBadge.className = 'split-pit-badge in-pit';
+      } else {
+        s1PitBadge.textContent = `${d1.pitStops !== undefined ? d1.pitStops : 0}P`;
+        s1PitBadge.className = 'split-pit-badge';
+      }
+    }
+    if (s1PitTime) {
+      s1PitTime.textContent = d1.lastStopTime || '';
+    }
 
     // Driver 2
     const d2 = teamData.d2;
     if (s2Code) s2Code.textContent = d2.driver;
     if (s2Pos) s2Pos.textContent = `P${d2.pos}`;
     if (s2BestLap) s2BestLap.textContent = d2.bestLap || '--:--.---';
+    const isFastest2 = Boolean(d2.isFastestLap || (fastestNum && d2.number === fastestNum));
+    const s2FastestEl = document.getElementById('s2-fastest-lap');
+    if (s2FastestEl) {
+      if (isFastest2) s2FastestEl.classList.remove('hidden');
+      else s2FastestEl.classList.add('hidden');
+    }
+    if (s2BestLap) {
+      if (isFastest2) s2BestLap.classList.add('fastest-purple');
+      else s2BestLap.classList.remove('fastest-purple');
+    }
     if (d2.sectors && Array.isArray(d2.sectors)) {
       d2.sectors.forEach((sec, idx) => {
         if (s2SecBoxes[idx] && s2SecVals[idx]) {
@@ -865,15 +1128,29 @@
       s2Compound.className = `compound-badge compound-${(d2.tire || 'm').toLowerCase()}`;
     }
     if (s2TireAge) s2TireAge.textContent = `${d2.tireAge}L`;
+    if (s2PitBadge) {
+      if (d2.inPit) {
+        s2PitBadge.textContent = 'IN PIT';
+        s2PitBadge.className = 'split-pit-badge in-pit';
+      } else {
+        s2PitBadge.textContent = `${d2.pitStops !== undefined ? d2.pitStops : 0}P`;
+        s2PitBadge.className = 'split-pit-badge';
+      }
+    }
+    if (s2PitTime) {
+      s2PitTime.textContent = d2.lastStopTime || '';
+    }
   }
 
   // Render Standings List
   function renderLeaderboard(list) {
     if (!list || !Array.isArray(list)) return;
     const currentNum = getSelectedDriver().number;
+    const fastestNum = getFastestLapDriverNumber(list);
 
     leaderboardListEl.innerHTML = '';
     list.forEach(item => {
+      const isFastest = Boolean(item.isFastestLap || (fastestNum && item.number === fastestNum));
       const li = document.createElement('li');
       li.className = `tower-row ${item.number === currentNum ? 'selected' : ''}`;
       li.dataset.driverNumber = item.number;
@@ -882,10 +1159,21 @@
           <span class="tower-pos">P${item.pos}</span>
           <span class="tower-color-pill" style="background-color: ${item.teamColor || '#FFF'}"></span>
           <span class="tower-code">${item.code}</span>
+          ${isFastest ? `
+            <span class="purple-stopwatch-badge tower-fastest-badge" title="Fastest Lap">
+              <svg class="purple-stopwatch-icon" viewBox="0 0 16 16" width="10" height="10" fill="none" stroke="#B138DD" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="8" cy="9" r="6"/>
+                <path d="M8 6v3l2 1"/>
+                <path d="M8 1v2"/>
+                <path d="M6 1h4"/>
+              </svg>
+            </span>
+          ` : ''}
         </div>
         <div class="tower-timing">
           <span class="compound-badge compound-${(item.tire || 'm').toLowerCase()}">${item.tire || 'M'}</span>
-          <span class="tower-gap">${item.gap}</span>
+          <span class="tower-pit-badge ${item.inPit ? 'in-pit' : ''}">${item.inPit ? 'PIT' : `${item.pitStops !== undefined ? item.pitStops : 0}P`}</span>
+          <span class="tower-gap ${isFastest && !item.inPit ? 'fastest-purple' : ''}">${item.inPit ? '<span class="tower-in-pit-tag">IN PIT</span>' : item.gap}</span>
         </div>
       `;
 
@@ -903,46 +1191,74 @@
     if (isFetching || activeView !== 'hud') return;
     isFetching = true;
     try {
-      const current = getSelectedDriver();
       let data = null;
 
       if (activeMode === 'LIVE' && window.F1LiveTiming) {
+        let rawData = null;
         try {
-          const rawData = await window.F1LiveTiming.getLeaderboard();
+          rawData = await window.F1LiveTiming.getLeaderboard();
           const liveDrivers = window.F1LiveTiming.parseLeaderboard(rawData);
           if (liveDrivers && liveDrivers.length) {
             drivers = liveDrivers;
-            const updated = drivers.find(d => d.number === current.number) || drivers[0];
-            driverPosEl.textContent = `P${updated.pos}`;
-            driverGapEl.textContent = updated.gap;
           }
         } catch (e) {}
+
+        const current = getSelectedDriver();
+        const updated = drivers.find(d => d.number === current.number) || drivers[0];
+        driverPosEl.textContent = `P${updated.pos}`;
+        driverGapEl.textContent = updated.gap;
 
         if (window.F1Simulator) {
           data = window.F1Simulator.getDriverTelemetry(current.number);
           const liveD = drivers.find(d => d.number === current.number) || current;
+          data.number = liveD.number;
+          data.code = liveD.code;
           data.pos = liveD.pos;
           data.gap = liveD.gap;
           data.tire = liveD.tire;
-          data.tireAge = liveD.tireAge;
+          data.tireAge = liveD.tireAge !== undefined ? liveD.tireAge : 1;
+          data.pitStops = liveD.pitStops !== undefined ? liveD.pitStops : 0;
+          data.inPit = Boolean(liveD.inPit);
+          data.lastStopTime = liveD.lastStopTime || null;
+          data.bestLap = liveD.bestLap || data.bestLap;
+          data.isFastestLap = Boolean(liveD.isFastestLap);
 
-          const raw = lastFinalisedLiveRawData || (window.F1LiveTiming.cache && window.F1LiveTiming.cache.leaderboard);
+          const raw = rawData || (window.F1LiveTiming.cache && window.F1LiveTiming.cache.leaderboard) || lastFinalisedLiveRawData;
           if (raw) {
             const sDetails = window.F1LiveTiming.getSessionDetails(raw);
             data.isRace = sDetails.isRace;
             data.sessionType = sDetails.sessionType;
             data.sessionPart = sDetails.part;
             data.sessionName = sDetails.sessionName;
+            data.timeLeftText = sDetails.timeLeftText;
+            if (sDetails.currentLap) data.lap = sDetails.currentLap;
+            if (sDetails.totalLaps) data.totalLaps = sDetails.totalLaps;
             updateSessionTicker(sDetails.tickerText);
+          }
+          const liveLap = (raw && raw.LapCount && raw.LapCount.CurrentLap) ||
+                          (window.F1LiveTiming.lastLapCount && window.F1LiveTiming.lastLapCount.CurrentLap) ||
+                          (data.isRace ? data.lap : null);
+          const liveTotal = (raw && raw.LapCount && raw.LapCount.TotalLaps) ||
+                            (window.F1LiveTiming.lastLapCount && window.F1LiveTiming.lastLapCount.TotalLaps) ||
+                            data.totalLaps || 62;
+          if (liveLap) {
+            data.lap = liveLap;
+            data.isRace = true;
+          }
+          if (liveTotal) {
+            data.totalLaps = liveTotal;
           }
           data.driverLaps = liveD.laps || liveD.tireAge || 1;
         }
       } else if (activeMode === 'REPLAY' && window.F1Simulator) {
+        const current = getSelectedDriver();
         data = window.F1Simulator.getDriverTelemetry(current.number);
         updateSessionTicker(getReplayTickerText());
       } else if (activeMode === 'LIVE' && window.OpenF1) {
+        const current = getSelectedDriver();
         data = await window.OpenF1.getTelemetry(current.number);
       } else {
+        const current = getSelectedDriver();
         const res = await fetch(`/api/telemetry?driver=${current.number}`);
         data = await res.json();
       }
@@ -963,6 +1279,18 @@
     isFetching = true;
     try {
       let teamData = null;
+      if (activeMode === 'LIVE' && window.F1LiveTiming) {
+        try {
+          const rawData = await window.F1LiveTiming.getLeaderboard();
+          const liveDrivers = window.F1LiveTiming.parseLeaderboard(rawData);
+          if (liveDrivers && liveDrivers.length) {
+            drivers = liveDrivers;
+            const extractedTeams = window.F1LiveTiming.extractTeams(liveDrivers);
+            if (extractedTeams.length > 0) teams = extractedTeams;
+          }
+        } catch (e) {}
+      }
+
       if (activeMode === 'LIVE' && window.F1LiveTiming && teams.length > 0) {
         const team = teams[currentTeamIndex] || teams[0];
         const d1 = team.drivers[0];
@@ -1001,29 +1329,39 @@
           delta: deltaStr,
           d1: {
             driver: liveD1.code,
+            number: liveD1.number,
             pos: liveD1.pos,
             bestLap: b1 || '--:--.---',
+            isFastestLap: Boolean(liveD1.isFastestLap),
             sectors: (liveD1.sectors && liveD1.sectors.length) ? liveD1.sectors : (sim1.sectors || []),
             gear: sim1.gear || 7,
-            speed: sim1.speed || 310,
-            drs: sim1.drs || 0,
+            speed: liveD1.inPit ? 80 : (sim1.speed || 310),
+            drs: liveD1.inPit ? 0 : (sim1.drs || 0),
             brake: sim1.brake || 0,
             throttle: sim1.throttle || 100,
             tire: liveD1.tire || 'M',
-            tireAge: liveD1.tireAge !== undefined ? liveD1.tireAge : 1
+            tireAge: liveD1.tireAge !== undefined ? liveD1.tireAge : 1,
+            pitStops: liveD1.pitStops !== undefined ? liveD1.pitStops : 0,
+            inPit: Boolean(liveD1.inPit),
+            lastStopTime: liveD1.lastStopTime || null
           },
           d2: {
             driver: liveD2.code,
+            number: liveD2.number,
             pos: liveD2.pos,
             bestLap: b2 || '--:--.---',
+            isFastestLap: Boolean(liveD2.isFastestLap),
             sectors: (liveD2.sectors && liveD2.sectors.length) ? liveD2.sectors : (sim2.sectors || []),
             gear: sim2.gear || 7,
-            speed: sim2.speed || 306,
-            drs: sim2.drs || 0,
+            speed: liveD2.inPit ? 80 : (sim2.speed || 306),
+            drs: liveD2.inPit ? 0 : (sim2.drs || 0),
             brake: sim2.brake || 0,
             throttle: sim2.throttle || 95,
             tire: liveD2.tire || 'M',
-            tireAge: liveD2.tireAge !== undefined ? liveD2.tireAge : 1
+            tireAge: liveD2.tireAge !== undefined ? liveD2.tireAge : 1,
+            pitStops: liveD2.pitStops !== undefined ? liveD2.pitStops : 0,
+            inPit: Boolean(liveD2.inPit),
+            lastStopTime: liveD2.lastStopTime || null
           }
         };
       } else if (window.F1Simulator) {
@@ -1057,12 +1395,21 @@
               pos: d.pos,
               gap: d.gap,
               tire: d.tire,
-              teamColor: d.color
+              teamColor: d.color,
+              bestLap: d.bestLap,
+              isFastestLap: Boolean(d.isFastestLap),
+              pitStops: d.pitStops !== undefined ? d.pitStops : 0,
+              inPit: Boolean(d.inPit),
+              lastStopTime: d.lastStopTime || null
             }));
           }
           const sessionDetails = window.F1LiveTiming.getSessionDetails(rawData, rcData);
           if (towerSessionEl) {
-            towerSessionEl.textContent = sessionDetails.isRace ? 'LIVE' : sessionDetails.part;
+            if (sessionDetails.isRace && sessionDetails.currentLap) {
+              towerSessionEl.textContent = `L ${sessionDetails.currentLap}/${sessionDetails.totalLaps || 62}`;
+            } else {
+              towerSessionEl.textContent = sessionDetails.isRace ? 'LIVE' : sessionDetails.part;
+            }
           }
           updateTowerTicker(sessionDetails.tickerText);
         } catch (liveErr) {
@@ -1302,6 +1649,14 @@
         startPolling();
       }
     });
+
+    // 10. Pit Stop Event Subscriptions
+    if (window.F1LiveTiming) {
+      window.F1LiveTiming.onPitEvent(showPitAlert);
+    }
+    if (window.F1Simulator) {
+      window.F1Simulator.onPitEvent(showPitAlert);
+    }
   }
 
   // Startup

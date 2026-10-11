@@ -162,8 +162,22 @@
       this.sessionPart = 'RACE';
       this.flagTimeline = null;
       this.customFlag = null;
+      this.pitListeners = [];
+      this.driverPitStates = new Map();
 
       this.initTrackGrid('singapore');
+    }
+
+    onPitEvent(callback) {
+      if (typeof callback === 'function') {
+        this.pitListeners.push(callback);
+      }
+    }
+
+    emitPitEvent(event) {
+      this.pitListeners.forEach(cb => {
+        try { cb(event); } catch (e) {}
+      });
     }
 
     // Initialize driver base positions for a specific circuit
@@ -440,6 +454,7 @@
       this.currentLap = 1;
       this.startTime = Date.now();
       this.customFlag = null;
+      if (this.driverPitStates) this.driverPitStates.clear();
     }
 
     setLap(lapNumber) {
@@ -527,7 +542,59 @@
 
       const lapsPassed = Math.floor(elapsed / this.lapDurationMs);
       const currentCompletedLaps = Math.min(this.totalLaps, this.currentLap + lapsPassed);
-      const tireAge = Math.max(1, currentCompletedLaps);
+
+      // Dynamic Pit Stop Strategy & Compound Changes
+      let pitStops = 0;
+      let inPit = false;
+      let lastStopTime = null;
+      let currentCompound = driver.compound || 'M';
+      let tireAge = Math.max(1, currentCompletedLaps);
+
+      if (this.isRace) {
+        const stop1Lap = Math.max(10, Math.floor(this.totalLaps * 0.35) + ((driver.number * 3) % 8));
+        const stop2Lap = Math.max(stop1Lap + 15, Math.floor(this.totalLaps * 0.70) + ((driver.number * 5) % 6));
+
+        if (currentCompletedLaps >= stop2Lap) {
+          pitStops = 2;
+          lastStopTime = (2.3 + ((driver.number * 3) % 7) * 0.1).toFixed(1) + 's';
+          currentCompound = 'S';
+          tireAge = Math.max(1, currentCompletedLaps - stop2Lap);
+          if (currentCompletedLaps === stop2Lap && cycleProgress < 0.15) inPit = true;
+        } else if (currentCompletedLaps >= stop1Lap) {
+          pitStops = 1;
+          lastStopTime = (2.2 + ((driver.number * 7) % 9) * 0.1).toFixed(1) + 's';
+          currentCompound = (driver.compound === 'S') ? 'H' : (driver.compound === 'H' ? 'M' : 'S');
+          tireAge = Math.max(1, currentCompletedLaps - stop1Lap);
+          if (currentCompletedLaps === stop1Lap && cycleProgress < 0.15) inPit = true;
+        }
+
+        // Track pit state & emit pit alerts
+        if (this.driverPitStates) {
+          const prevPit = this.driverPitStates.get(driver.number) || { wasInPit: false };
+          if (inPit && !prevPit.wasInPit) {
+            this.emitPitEvent({
+              type: 'ENTRY',
+              driverNum: driver.number,
+              code: driver.code,
+              name: driver.name || driver.fullName || `Driver ${driver.number}`,
+              color: driver.teamColor || '#FE5000',
+              pitStops: pitStops
+            });
+          } else if (!inPit && prevPit.wasInPit) {
+            this.emitPitEvent({
+              type: 'COMPLETE',
+              driverNum: driver.number,
+              code: driver.code,
+              name: driver.name || driver.fullName || `Driver ${driver.number}`,
+              color: driver.teamColor || '#FE5000',
+              stopTime: lastStopTime || '2.4s',
+              pitStops: pitStops,
+              compound: currentCompound
+            });
+          }
+          this.driverPitStates.set(driver.number, { wasInPit: inPit });
+        }
+      }
 
       let speed = 0;
       let gear = 1;
@@ -582,6 +649,12 @@
         rpm = 8800 + Math.floor(p * 2800);
         throttle = Math.floor(65 + p * 35);
         brake = 0;
+        drs = 0;
+      }
+
+      if (inPit) {
+        speed = 80; // Pit lane speed limiter
+        gear = 2;
         drs = 0;
       }
 
@@ -659,8 +732,12 @@
         throttle: throttle,
         brake: brake,
         drs: drs,
-        tire: driver.compound,
+        tire: currentCompound,
         tireAge: tireAge,
+        pitStops: pitStops,
+        inPit: inPit,
+        lastStopTime: lastStopTime,
+        isFastestLap: (driver.basePos === 1),
         mode: 'REPLAY',
         trackId: this.currentTrackId,
         trackName: this.currentTrackName,
@@ -684,6 +761,8 @@
 
       const t1 = this.computeTelemetry(d1, d1.basePos - 1);
       const t2 = this.computeTelemetry(d2, d2.basePos - 1);
+      t1.isFastestLap = (d1.basePos === 1);
+      t2.isFastestLap = (d2.basePos === 1);
 
       const parseLapMs = (str) => {
         if (!str) return 0;
@@ -719,6 +798,29 @@
 
       return this.activeDrivers.map((d) => {
         let gap = 'LEADER';
+        let pitStops = 0;
+        let inPit = false;
+        let lastStopTime = null;
+        let currentCompound = d.compound || 'M';
+        let tireAge = Math.max(1, currentCompletedLaps);
+
+        if (this.isRace) {
+          const stop1Lap = Math.max(10, Math.floor(this.totalLaps * 0.35) + ((d.number * 3) % 8));
+          const stop2Lap = Math.max(stop1Lap + 15, Math.floor(this.totalLaps * 0.70) + ((d.number * 5) % 6));
+
+          if (currentCompletedLaps >= stop2Lap) {
+            pitStops = 2;
+            lastStopTime = (2.3 + ((d.number * 3) % 7) * 0.1).toFixed(1) + 's';
+            currentCompound = 'S';
+            tireAge = Math.max(1, currentCompletedLaps - stop2Lap);
+          } else if (currentCompletedLaps >= stop1Lap) {
+            pitStops = 1;
+            lastStopTime = (2.2 + ((d.number * 7) % 9) * 0.1).toFixed(1) + 's';
+            currentCompound = (d.compound === 'S') ? 'H' : (d.compound === 'H' ? 'M' : 'S');
+            tireAge = Math.max(1, currentCompletedLaps - stop1Lap);
+          }
+        }
+
         if (d.basePos > 1) {
           const baseGap = (d.basePos - 1) * 1.45;
           const lapSpread = Math.min(25, (currentCompletedLaps - 1) * 0.35);
@@ -732,8 +834,13 @@
           team: d.teamName,
           teamColor: d.teamColor,
           gap: gap,
-          tire: d.compound,
-          tireAge: Math.max(1, currentCompletedLaps)
+          bestLap: d.bestLap,
+          isFastestLap: (d.basePos === 1),
+          tire: currentCompound,
+          tireAge: tireAge,
+          pitStops: pitStops,
+          inPit: inPit,
+          lastStopTime: lastStopTime
         };
       });
     }
