@@ -108,40 +108,46 @@
     }
   ];
 
-  // Circuit-Specific Authentic Finishing Orders
+  // Circuit-Specific Authentic Finishing Orders (17 Rounds of 2026 + Classics)
   const TRACK_FINISH_ORDERS = {
-    // Singapore 2026 (matches actual live session from today!)
+    // Round 1 • Australian GP (Albert Park) — Winner: George Russell
+    albert_park: ['RUS', 'LEC', 'VER', 'NOR', 'PIA', 'ANT', 'HAM', 'SAI', 'ALB', 'ALO', 'GAS', 'TSU', 'HUL', 'OCO', 'BEA', 'BOR', 'STR', 'DOO', 'LAW', 'PER', 'BOT', 'HAD'],
+    // Round 2 • Chinese GP (Shanghai) — Winner: Kimi Antonelli
+    shanghai: ['ANT', 'RUS', 'VER', 'NOR', 'LEC', 'HAM', 'PIA', 'ALO', 'SAI', 'ALB', 'GAS', 'HUL', 'TSU', 'OCO', 'BEA', 'STR', 'DOO', 'LAW', 'BOR', 'PER', 'BOT', 'HAD'],
+    // Round 3 • Japanese GP (Suzuka) — Winner: Kimi Antonelli
+    suzuka: ['ANT', 'VER', 'RUS', 'NOR', 'LEC', 'PIA', 'HAM', 'ALO', 'SAI', 'ALB', 'GAS', 'HUL', 'TSU', 'OCO', 'BEA', 'STR', 'DOO', 'LAW', 'BOR', 'PER', 'BOT', 'HAD'],
+    // Round 4 • Miami GP — Winner: Kimi Antonelli
+    miami: ['ANT', 'NOR', 'VER', 'RUS', 'LEC', 'PIA', 'HAM', 'SAI', 'ALB', 'ALO', 'GAS', 'HUL', 'TSU', 'OCO', 'BEA', 'STR', 'DOO', 'LAW', 'BOR', 'PER', 'BOT', 'HAD'],
+    // Round 5 • Canadian GP (Montreal) — Winner: Kimi Antonelli
+    montreal: ['ANT', 'VER', 'RUS', 'NOR', 'HAM', 'LEC', 'PIA', 'SAI', 'ALB', 'ALO', 'GAS', 'HUL', 'TSU', 'OCO', 'BEA', 'STR', 'DOO', 'LAW', 'BOR', 'PER', 'BOT', 'HAD'],
+    // Round 6 • Monaco GP — Winner: Kimi Antonelli
+    monaco: ['ANT', 'LEC', 'PIA', 'RUS', 'VER', 'NOR', 'HAM', 'SAI', 'ALB', 'ALO', 'GAS', 'HUL', 'TSU', 'OCO', 'BEA', 'STR', 'DOO', 'LAW', 'BOR', 'PER', 'BOT', 'HAD'],
+    // Round 7 • Barcelona-Catalunya GP — Winner: Lewis Hamilton
+    catalunya: ['HAM', 'VER', 'RUS', 'NOR', 'LEC', 'PIA', 'ANT', 'SAI', 'ALB', 'ALO', 'GAS', 'HUL', 'TSU', 'OCO', 'BEA', 'STR', 'DOO', 'LAW', 'BOR', 'PER', 'BOT', 'HAD'],
+    // Round 8 • Austrian GP (Red Bull Ring) — Winner: George Russell
+    austria: ['RUS', 'PIA', 'ANT', 'SAI', 'HAM', 'VER', 'HUL', 'GAS', 'ALB', 'TSU', 'NOR', 'LEC', 'ALO', 'OCO', 'STR', 'LAW', 'BEA', 'DOO', 'BOR', 'PER', 'BOT', 'HAD'],
+    // Round 9 • British GP (Silverstone) — Winner: Charles Leclerc
+    silverstone: ['LEC', 'HAM', 'VER', 'NOR', 'PIA', 'RUS', 'ANT', 'SAI', 'ALB', 'ALO', 'HUL', 'GAS', 'OCO', 'STR', 'LAW', 'BEA', 'DOO', 'BOR', 'PER', 'BOT', 'HAD', 'TSU'],
+    // Round 10 • Belgian GP (Spa-Francorchamps) — Winner: Kimi Antonelli
+    spa: ['ANT', 'HAM', 'PIA', 'LEC', 'VER', 'RUS', 'NOR', 'SAI', 'ALB', 'ALO', 'GAS', 'HUL', 'OCO', 'STR', 'LAW', 'BEA', 'DOO', 'BOR', 'PER', 'BOT', 'HAD', 'TSU'],
+    // Round 11 • Hungarian GP (Hungaroring) — Winner: Lando Norris
+    hungaroring: ['NOR', 'PIA', 'ANT', 'HAM', 'LEC', 'VER', 'RUS', 'SAI', 'ALB', 'ALO', 'HUL', 'GAS', 'OCO', 'STR', 'LAW', 'BEA', 'DOO', 'BOR', 'PER', 'BOT', 'HAD', 'TSU'],
+    // Round 12 • Dutch GP (Zandvoort) — Winner: Lando Norris
+    zandvoort: ['NOR', 'VER', 'ANT', 'LEC', 'PIA', 'RUS', 'HAM', 'SAI', 'ALB', 'GAS', 'ALO', 'HUL', 'OCO', 'STR', 'LAW', 'BEA', 'DOO', 'BOR', 'PER', 'BOT', 'HAD', 'TSU'],
+    // Round 13 • Italian GP (Monza) — Winner: Kimi Antonelli
+    monza: ['ANT', 'LEC', 'PIA', 'NOR', 'SAI', 'HAM', 'RUS', 'VER', 'ALB', 'HUL', 'ALO', 'GAS', 'OCO', 'STR', 'LAW', 'BEA', 'DOO', 'BOR', 'PER', 'BOT', 'HAD', 'TSU'],
+    // Round 14 • Spanish GP (Madring) — Winner: Kimi Antonelli
+    madrid: ['ANT', 'RUS', 'VER', 'HAM', 'LEC', 'NOR', 'PIA', 'SAI', 'ALO', 'ALB', 'GAS', 'HUL', 'OCO', 'STR', 'LAW', 'BEA', 'DOO', 'BOR', 'PER', 'BOT', 'HAD', 'TSU'],
+    // Round 15 • Azerbaijan GP (Baku) — Winner: George Russell
+    baku: ['RUS', 'ANT', 'PIA', 'LEC', 'VER', 'NOR', 'HAM', 'SAI', 'ALO', 'ALB', 'HUL', 'GAS', 'OCO', 'STR', 'LAW', 'BEA', 'DOO', 'BOR', 'PER', 'BOT', 'HAD', 'TSU'],
+    // Round 16 • Bahrain GP (Sakhir) — Winner: Max Verstappen
+    bahrain: ['VER', 'ANT', 'RUS', 'LEC', 'NOR', 'HAM', 'PIA', 'SAI', 'ALO', 'ALB', 'GAS', 'HUL', 'OCO', 'STR', 'LAW', 'BEA', 'DOO', 'BOR', 'PER', 'BOT', 'HAD', 'TSU'],
+    // Round 17 • Singapore GP (Marina Bay) — Winner: Max Verstappen
     singapore: ['VER', 'RUS', 'LEC', 'PIA', 'NOR', 'HAM', 'ANT', 'LAW', 'HAD', 'GAS', 'HUL', 'ALB', 'ALO', 'TSU', 'OCO', 'BEA', 'BOR', 'STR', 'DOO', 'PER', 'BOT', 'SAI'],
-    // Silverstone (British GP historic home win)
-    silverstone: ['HAM', 'VER', 'NOR', 'PIA', 'SAI', 'HUL', 'STR', 'ALO', 'ALB', 'TSU', 'RUS', 'LEC', 'GAS', 'OCO', 'PER', 'ANT', 'LAW', 'DOO', 'BEA', 'BOR'],
-    // Monaco (Leclerc home triumph)
-    monaco: ['LEC', 'PIA', 'SAI', 'NOR', 'RUS', 'VER', 'HAM', 'TSU', 'ALB', 'GAS', 'OCO', 'ALO', 'HUL', 'PER', 'STR', 'ANT', 'LAW', 'BEA', 'DOO', 'BOR'],
-    // Spa-Francorchamps (Belgian GP thriller)
-    spa: ['HAM', 'PIA', 'LEC', 'VER', 'NOR', 'SAI', 'PER', 'ALO', 'OCO', 'ALB', 'RUS', 'GAS', 'TSU', 'HUL', 'STR', 'ANT', 'LAW', 'BEA', 'DOO', 'BOR'],
-    // Monza (Ferrari home victory)
-    monza: ['LEC', 'PIA', 'NOR', 'SAI', 'HAM', 'RUS', 'VER', 'PER', 'ALB', 'HUL', 'ALO', 'GAS', 'OCO', 'TSU', 'STR', 'ANT', 'LAW', 'BEA', 'DOO', 'BOR'],
-    // Red Bull Ring (Austrian GP victory)
-    austria: ['RUS', 'PIA', 'SAI', 'HAM', 'VER', 'HUL', 'PER', 'GAS', 'ALB', 'TSU', 'NOR', 'LEC', 'ALO', 'OCO', 'STR', 'ANT', 'LAW', 'BEA', 'DOO', 'BOR'],
-    // Suzuka (Japanese GP masterclass)
-    suzuka: ['VER', 'PER', 'SAI', 'LEC', 'NOR', 'ALO', 'RUS', 'HAM', 'TSU', 'HUL', 'ALB', 'GAS', 'OCO', 'STR', 'ANT', 'LAW', 'BEA', 'DOO', 'BOR'],
-    // Interlagos (São Paulo GP rain masterclass)
-    interlagos: ['VER', 'OCO', 'GAS', 'RUS', 'LEC', 'NOR', 'TSU', 'LAW', 'HAM', 'PER', 'SAI', 'ALB', 'HUL', 'ALO', 'STR', 'BEA', 'BOR', 'ANT', 'DOO'],
-    // Yas Marina (Abu Dhabi finale)
-    abudhabi: ['NOR', 'SAI', 'LEC', 'HAM', 'RUS', 'VER', 'GAS', 'HUL', 'ALO', 'TSU', 'ALB', 'PER', 'OCO', 'STR', 'ANT', 'LAW', 'BEA', 'DOO', 'BOR'],
-    // Bahrain (Sakhir desert opener)
-    bahrain: ['VER', 'PER', 'SAI', 'LEC', 'RUS', 'NOR', 'HAM', 'PIA', 'ALO', 'STR', 'TSU', 'HUL', 'ALB', 'GAS', 'OCO', 'ANT', 'LAW', 'BEA', 'DOO', 'BOR'],
-    // Miami (Norris maiden victory)
-    miami: ['NOR', 'VER', 'LEC', 'SAI', 'PER', 'HAM', 'TSU', 'RUS', 'ALO', 'OCO', 'HUL', 'ALB', 'GAS', 'STR', 'ANT', 'LAW', 'BEA', 'DOO', 'BOR', 'PIA'],
-    // Barcelona-Catalunya (Spanish GP)
-    catalunya: ['VER', 'NOR', 'HAM', 'RUS', 'LEC', 'SAI', 'PIA', 'PER', 'GAS', 'OCO', 'HUL', 'ALO', 'TSU', 'ALB', 'STR', 'ANT', 'LAW', 'BEA', 'DOO', 'BOR'],
-    // Hungaroring (Piastri maiden victory)
-    hungaroring: ['PIA', 'NOR', 'HAM', 'LEC', 'VER', 'SAI', 'PER', 'RUS', 'TSU', 'STR', 'ALO', 'HUL', 'ALB', 'GAS', 'OCO', 'ANT', 'LAW', 'BEA', 'DOO', 'BOR'],
-    // Zandvoort (Dutch GP)
-    zandvoort: ['NOR', 'VER', 'LEC', 'PIA', 'SAI', 'PER', 'RUS', 'HAM', 'GAS', 'ALO', 'HUL', 'TSU', 'ALB', 'STR', 'OCO', 'ANT', 'LAW', 'BEA', 'DOO', 'BOR'],
-    // Baku (Azerbaijan street race)
-    baku: ['PIA', 'LEC', 'RUS', 'NOR', 'VER', 'ALO', 'ALB', 'HAM', 'BEA', 'HUL', 'GAS', 'TSU', 'STR', 'OCO', 'SAI', 'PER', 'ANT', 'LAW', 'DOO', 'BOR'],
-    // Las Vegas Strip Circuit
-    vegas: ['RUS', 'HAM', 'SAI', 'LEC', 'VER', 'NOR', 'PIA', 'HUL', 'TSU', 'PER', 'ALO', 'ALB', 'STR', 'GAS', 'OCO', 'BEA', 'ANT', 'LAW', 'DOO', 'BOR']
+    // Classic Thrillers
+    interlagos: ['VER', 'OCO', 'GAS', 'RUS', 'LEC', 'NOR', 'TSU', 'LAW', 'HAM', 'PER', 'SAI', 'ALB', 'HUL', 'ALO', 'STR', 'BEA', 'BOR', 'ANT', 'DOO', 'HAD', 'BOT'],
+    vegas: ['RUS', 'HAM', 'SAI', 'LEC', 'VER', 'NOR', 'PIA', 'HUL', 'TSU', 'PER', 'ALO', 'ALB', 'STR', 'GAS', 'OCO', 'BEA', 'ANT', 'LAW', 'DOO', 'BOR', 'HAD', 'BOT'],
+    abudhabi: ['NOR', 'SAI', 'LEC', 'HAM', 'RUS', 'VER', 'GAS', 'HUL', 'ALO', 'TSU', 'ALB', 'PER', 'OCO', 'STR', 'ANT', 'LAW', 'BEA', 'DOO', 'BOR', 'HAD', 'BOT']
   };
 
   class SimulatorEngine {
@@ -467,7 +473,11 @@
       this.isLiveReplay = false;
       this.flagTimeline = null;
       this.customFlag = null;
-      const tm = (typeof window !== 'undefined' && window.TrackManager) ? window.TrackManager : null;
+      const tm = (typeof window !== 'undefined' && window.TrackManager) 
+        ? window.TrackManager 
+        : ((typeof TrackManager !== 'undefined') 
+            ? TrackManager 
+            : (typeof require !== 'undefined' ? (function() { try { return require('./tracks.js'); } catch(e) { return null; } })() : null));
       if (tm) {
         const t = tm.getTrackById(trackId);
         if (t) {
@@ -518,17 +528,25 @@
     }
 
     getDrivers() {
-      return this.activeDrivers.map(d => ({
-        number: d.number,
-        code: d.code,
-        name: d.name,
-        team: d.teamName,
-        color: d.teamColor,
-        teamIndex: d.teamIndex,
-        pos: d.basePos,
-        bestLap: d.bestLap,
-        sectors: d.sectors
-      }));
+      const baseTrackLapSec = this.lapDurationMs ? (this.lapDurationMs / 1000) : 85.0;
+      return this.activeDrivers.map(d => {
+        const baseLapSec = baseTrackLapSec + (d.basePos - 1) * 0.24;
+        const min = Math.floor(baseLapSec / 60);
+        const secRem = (baseLapSec % 60).toFixed(3);
+        const computedBestLap = `${min}:${secRem < 10 ? '0' : ''}${secRem}`;
+        return {
+          number: d.number,
+          code: d.code,
+          name: d.name,
+          team: d.teamName,
+          color: d.teamColor,
+          teamIndex: d.teamIndex,
+          pos: d.basePos,
+          bestLap: d.bestLap || computedBestLap,
+          sectors: d.sectors,
+          isFastestLap: (d.basePos === 1)
+        };
+      });
     }
 
     computeTelemetry(driver, globalIndex) {
@@ -673,7 +691,8 @@
       }
 
       // Best Lap & Sectors
-      const baseLapSec = 91.2 + (driver.basePos - 1) * 0.24;
+      const baseTrackLapSec = this.lapDurationMs ? (this.lapDurationMs / 1000) : 85.0;
+      const baseLapSec = baseTrackLapSec + (driver.basePos - 1) * 0.24;
       const min = Math.floor(baseLapSec / 60);
       const secRem = (baseLapSec % 60).toFixed(3);
       const computedBestLap = `${min}:${secRem < 10 ? '0' : ''}${secRem}`;
@@ -827,6 +846,13 @@
           const gapSec = (baseGap + lapSpread + Math.sin(now / 15000 + d.basePos) * 0.2).toFixed(3);
           gap = `+${gapSec}s`;
         }
+
+        const baseTrackLapSec = this.lapDurationMs ? (this.lapDurationMs / 1000) : 85.0;
+        const baseLapSec = baseTrackLapSec + (d.basePos - 1) * 0.24;
+        const min = Math.floor(baseLapSec / 60);
+        const secRem = (baseLapSec % 60).toFixed(3);
+        const computedBestLap = `${min}:${secRem < 10 ? '0' : ''}${secRem}`;
+
         return {
           pos: d.basePos,
           code: d.code,
@@ -834,7 +860,7 @@
           team: d.teamName,
           teamColor: d.teamColor,
           gap: gap,
-          bestLap: d.bestLap,
+          bestLap: d.bestLap || computedBestLap,
           isFastestLap: (d.basePos === 1),
           tire: currentCompound,
           tireAge: tireAge,

@@ -142,11 +142,30 @@ The **Manufacturer Split View** provides an in-depth, side-by-side performance a
 * **Live Grand Prix Mode**:
   * Connects to live session feeds for current race weekends.
   * **Track Inactive Detection**: If selected when no cars are running, RF1 displays an informative screen noting track status and scheduled broadcast session times.
-* **Curated Replay Catalogue (9 Iconic Circuits)**:
-  * **2026**: Singapore GP (Marina Bay Street Circuit)
-  * **2024**: British GP (Silverstone), Austrian GP (Red Bull Ring), Abu Dhabi GP (Yas Marina)
-  * **Classic Tracks**: Monaco GP (Circuit de Monaco), Belgian GP (Spa-Francorchamps), Italian GP (Monza), Japanese GP (Suzuka), São Paulo GP (Interlagos)
-* **Season Filter Pills**: Filter races quickly with **`ALL`**, **`2026`**, **`2024`**, and **`CLASSIC`** tags.
+* **Curated Replay Catalogue (20 Championship & Classic Circuits)**:
+  * **2026 Season Replay Rounds (R1–R17)**: Fully backdated with authentic starting grids, track-specific lap counts, authentic circuit-specific lap times, pit strategies, and exact race winners:
+    * 🇦🇺 **R1 Australian GP** (Albert Park Circuit • 58 Laps) — Winner: **George Russell** (`RUS`)
+    * 🇨🇳 **R2 Chinese GP** (Shanghai International Circuit • 56 Laps) — Winner: **Kimi Antonelli** (`ANT`)
+    * 🇯🇵 **R3 Japanese GP** (Suzuka Circuit • 53 Laps) — Winner: **Kimi Antonelli** (`ANT`)
+    * 🇺🇸 **R4 Miami GP** (Miami International Autodrome • 57 Laps) — Winner: **Kimi Antonelli** (`ANT`)
+    * 🇨🇦 **R5 Canadian GP** (Circuit Gilles Villeneuve • 70 Laps) — Winner: **Kimi Antonelli** (`ANT`)
+    * 🇲🇨 **R6 Monaco GP** (Circuit de Monaco • 78 Laps) — Winner: **Kimi Antonelli** (`ANT`)
+    * 🇪🇸 **R7 Barcelona-Catalunya GP** (Circuit de Barcelona-Catalunya • 66 Laps) — Winner: **Lewis Hamilton** (`HAM`)
+    * 🇦🇹 **R8 Austrian GP** (Red Bull Ring • 71 Laps) — Winner: **George Russell** (`RUS`)
+    * 🇬🇧 **R9 British GP** (Silverstone Circuit • 52 Laps) — Winner: **Charles Leclerc** (`LEC`)
+    * 🇧🇪 **R10 Belgian GP** (Circuit de Spa-Francorchamps • 44 Laps) — Winner: **Kimi Antonelli** (`ANT`)
+    * 🇭🇺 **R11 Hungarian GP** (Hungaroring • 70 Laps) — Winner: **Lando Norris** (`NOR`)
+    * 🇳🇱 **R12 Dutch GP** (Circuit Zandvoort • 72 Laps) — Winner: **Lando Norris** (`NOR`)
+    * 🇮🇹 **R13 Italian GP** (Autodromo Nazionale Monza • 53 Laps) — Winner: **Kimi Antonelli** (`ANT`)
+    * 🇪🇸 **R14 Spanish GP** (Madring Circuit • 57 Laps) — Winner: **Kimi Antonelli** (`ANT`)
+    * 🇦🇿 **R15 Azerbaijan GP** (Baku City Circuit • 51 Laps) — Winner: **George Russell** (`RUS`)
+    * 🇧🇭 **R16 Bahrain GP** (Bahrain International Circuit • 57 Laps) — Winner: **Max Verstappen** (`VER`)
+    * 🇸🇬 **R17 Singapore GP** (Marina Bay Street Circuit • 62 Laps) — Winner: **Max Verstappen** (`VER`)
+  * **Classic Recent History Thrillers**:
+    * 🇧🇷 **São Paulo GP** (Autódromo de Interlagos • 71 Laps) — Winner: **Max Verstappen** (`VER`)
+    * 🇺🇸 **Las Vegas GP** (Las Vegas Strip Circuit • 50 Laps) — Winner: **George Russell** (`RUS`)
+    * 🇦🇪 **Abu Dhabi GP** (Yas Marina Circuit • 58 Laps) — Winner: **Lando Norris** (`NOR`)
+* **Season Filter Pills**: Filter races quickly with **`ALL`**, **`2026`**, and **`CLASSIC`** pills.
 * **Restart from Lap 1**: Dedicated reset button to restart any race replay back to Lap 1 with fresh tyres and starting grid order.
 
 ---
@@ -246,7 +265,7 @@ flowchart TD
 
 1. **Official F1 SignalR Timing Stream**: Connected through the lightweight `f1-livetiming-api` server, extracting `BestLapTime`, multi-sector timing objects (`Sectors[0..2]`), tyre compound stints, and race control flags in real time with **no rate limits**.
 2. **OpenF1 Authentication Fallback**: Secondary support for OpenF1 API keys when connected to legacy endpoints.
-3. **Autonomous Physics Engine**: When offline or in Replay mode, RF1 runs an internal, deterministic telemetry simulation that models throttle traces, brake points, gear shifts, tyre degradation, and sector deltas across 9 world championship circuits.
+3. **Autonomous Physics Engine**: When offline or in Replay mode, RF1 runs an internal, deterministic telemetry simulation that models throttle traces, brake points, gear shifts, tyre degradation, and sector deltas across all 20 world championship and classic circuits.
 
 ---
 

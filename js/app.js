@@ -238,10 +238,12 @@
       const card = document.createElement('div');
       card.className = `race-card ${track.id === currentTrackId && activeMode === 'REPLAY' ? 'active' : ''}`;
       card.dataset.trackId = track.id;
+      const roundTag = track.round ? `${track.round} • ` : '';
+      const winnerTag = track.winner ? ` • 🏆 ${track.winner}` : '';
       card.innerHTML = `
         <div class="race-card-info">
-          <div class="race-card-title">${track.flag} ${track.name}</div>
-          <div class="race-card-sub">${track.gp} • ${track.season} • ${track.laps} LAPS</div>
+          <div class="race-card-title">${track.flag} ${roundTag}${track.name}</div>
+          <div class="race-card-sub">${track.gp} • ${track.season} • ${track.laps} LAPS${winnerTag}</div>
         </div>
         <svg viewBox="${track.viewBox || '0 0 500 500'}" class="race-card-mini-svg">
           <path d="${track.svgPath}" fill="none" stroke="#FE5000" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" />
@@ -418,12 +420,13 @@
         towerSessionEl.textContent = `L 1/${track.laps || 62}`;
       }
       if (hudSessionSub) {
-        hudSessionSub.textContent = 'GRAND PRIX';
+        hudSessionSub.textContent = track.round ? `${track.round} GRAND PRIX` : 'GRAND PRIX';
       }
       const gpTitle = (track.gp ? track.gp.replace(' GP', ' GRAND PRIX') : (track.name || track.shortName)).toUpperCase();
-      updateTowerTicker(`${track.flag} ${gpTitle} • GRAND PRIX • 🏁 REPLAY`);
+      const roundPrefix = track.round ? `${track.round} • ` : '';
+      updateTowerTicker(`${track.flag} ${roundPrefix}${gpTitle} • 🏁 REPLAY`);
 
-      showToast(`${track.flag} ${track.gp}`);
+      showToast(`${track.flag} ${track.round ? `${track.round} ` : ''}${track.gp}`);
     }
 
     renderPastRacesList(currentSeasonFilter);
@@ -664,6 +667,7 @@
   function getReplayTickerText() {
     const track = window.TrackManager ? window.TrackManager.getTrackById(currentTrackId) : null;
     const flag = track ? track.flag : '🏁';
+    const roundPrefix = (track && track.round) ? `${track.round} • ` : '';
     const gpTitle = (track ? (track.gp ? track.gp.replace(' GP', ' GRAND PRIX') : track.shortName) : 'SINGAPORE GRAND PRIX').toUpperCase();
     const sim = window.F1Simulator;
     let part = (sim && sim.sessionPart) || (sim && sim.isRace ? 'GRAND PRIX' : 'QUALI');
@@ -671,7 +675,7 @@
     else if (part === 'SQ3' || part === 'SQ2' || part === 'SQ1') part = `${part} SPRINT QUALI`;
     else if (part === 'Q3' || part === 'Q2' || part === 'Q1') part = `${part} QUALIFYING`;
     else if (part === 'FP1' || part === 'FP2' || part === 'FP3') part = `${part} PRACTICE`;
-    return `${flag} ${gpTitle} • ${part} • 🏁 REPLAY`;
+    return `${flag} ${roundPrefix}${gpTitle} • ${part} • 🏁 REPLAY`;
   }
 
   function updateTowerTicker(text) {
